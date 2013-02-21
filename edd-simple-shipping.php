@@ -84,6 +84,9 @@ class EDD_Simple_Shipping {
 		// Add our meta fields to the EDD save routine
 		add_filter( 'edd_metabox_fields_save', array( $this, 'meta_fields_save' ) );
 
+		// Apply shipping costs to the checkout
+		add_action( 'init', array( $this, 'apply_shipping_fees' ) );
+
 		// auto updater
 
 		// retrieve our license key from the DB
@@ -167,6 +170,77 @@ class EDD_Simple_Shipping {
 		$fields[] = '_edd_shipping_domestic';
 		$fields[] = '_edd_shipping_international';
 		return $fields;
+
+	}
+
+
+	private function item_has_shipping( $item_id = 0 ) {
+		$enabled = get_post_meta( $item_id, '_edd_enable_shipping', true );
+		return (bool) apply_filters( 'edd_simple_shipping_item_has_shipping', $enabled, $item_id );
+	}
+
+
+	private function cart_needs_shipping() {
+		$cart_contents = edd_get_cart_contents();
+		$ret = false;
+		if( is_array( $cart_contents ) ) {
+			foreach( $cart_contents as $item ) {
+				if( $this->item_has_shipping( $item['id'] ) ) {
+					$ret = true;
+					break;
+				}
+			}
+		}
+		return (bool) apply_filters( 'edd_simple_shipping_cart_needs_shipping', $ret );
+	}
+
+
+	private function is_domestic() {
+		return true;
+	}
+
+
+	public function calc_total_shipping() {
+
+		if( ! $this->cart_needs_shipping() )
+			return 0.00;
+
+		$cart_contents = edd_get_cart_contents();
+
+		if( ! is_array( $cart_contents ) )
+			return 0.00;
+
+		$amount = 0.00;
+
+		foreach( $cart_contents as $item ) {
+			if( $this->item_has_shipping( $item['id'] ) ) {
+
+				if( $this->is_domestic() ) {
+
+					$amount += (float) get_post_meta( $item['id'], '_edd_shipping_domestic', true );
+
+				} else {
+
+					$amount += (float) get_post_meta( $item['id'], '_edd_shipping_international', true );
+
+				}
+
+			}
+		}
+
+		return apply_filters( 'edd_simple_shipping_total', $amount );
+
+	}
+
+
+	public function apply_shipping_fees() {
+
+		if( ! $this->cart_needs_shipping() )
+			return;
+
+		$amount = $this->calc_total_shipping();
+
+		EDD()->fees->add_fee( $amount, __( 'Shipping Costs', 'edd-simple-shipping' ) );
 
 	}
 
