@@ -255,7 +255,7 @@ class EDD_Simple_Shipping {
 			<?php do_action( 'edd_shipping_address_top' ); ?>
 			<legend><?php _e( 'Shipping Details', 'edd-simple-shipping' ); ?></legend>
 			<p id="edd-shipping-address-wrap">
-				<input type="text" name="shipping_address" class="shipping-address edd-input required" placeholder="<?php _e( 'Address line 1', 'edd' ); ?>"/>
+				<input type="text" name="shipping_address" class="shipping-address edd-input" placeholder="<?php _e( 'Address line 1', 'edd' ); ?>"/>
 				<label class="edd-label"><?php _e( 'Shipping Address', 'edd' ); ?></label>
 			</p>
 			<p id="edd-shipping-address-2-wrap">
@@ -263,11 +263,11 @@ class EDD_Simple_Shipping {
 				<label class="edd-label"><?php _e( 'Shipping Address Line 2', 'edd' ); ?></label>
 			</p>
 			<p id="edd-card-city-wrap">
-				<input type="text" name="shipping_city" class="card-city edd-input required" placeholder="<?php _e( 'City', 'edd' ); ?>"/>
+				<input type="text" name="shipping_city" class="card-city edd-input" placeholder="<?php _e( 'City', 'edd' ); ?>"/>
 				<label class="edd-label"><?php _e( 'Shipping City', 'edd' ); ?></label>
 			</p>
 			<p id="edd-card-country-wrap">
-				<select name="shipping_country" class="shipping-country edd-select required">
+				<select name="shipping_country" class="shipping-country edd-select">
 					<?php
 					$countries = edd_get_country_list();
 					foreach( $countries as $country_code => $country ) {
@@ -279,7 +279,7 @@ class EDD_Simple_Shipping {
 			</p>
 			<p id="edd-card-state-wrap">
 				<input type="text" size="6" name="shipping_state_other" id="shipping_state_other" class="card-state edd-input" placeholder="<?php _e( 'State / Province', 'edd' ); ?>" style="display:none;"/>
-	            <select name="shipping_state_us" id="shipping_state_us" class="card-state edd-select required">
+	            <select name="shipping_state_us" id="shipping_state_us" class="card-state edd-select">
 	                <?php
 	                    $states = edd_get_states_list();
 	                    foreach( $states as $state_code => $state ) {
@@ -287,7 +287,7 @@ class EDD_Simple_Shipping {
 	                    }
 	                ?>
 	            </select>
-	            <select name="shipping_state_ca" id="shipping_state_ca" class="card-state edd-select required" style="display: none;">
+	            <select name="shipping_state_ca" id="shipping_state_ca" class="card-state edd-select" style="display: none;">
 	                <?php
 	                    $provinces = edd_get_provinces_list();
 	                    foreach( $provinces as $province_code => $province ) {
@@ -298,7 +298,7 @@ class EDD_Simple_Shipping {
 				<label class="edd-label"><?php _e( 'Shipping State / Province', 'edd' ); ?></label>
 			</p>
 			<p id="edd-card-zip-wrap">
-				<input type="text" size="4" name="shipping_zip" class="card-zip edd-input required" placeholder="<?php _e( 'Zip / Postal code', 'edd' ); ?>"/>
+				<input type="text" size="4" name="shipping_zip" class="card-zip edd-input" placeholder="<?php _e( 'Zip / Postal code', 'edd' ); ?>"/>
 				<label class="edd-label"><?php _e( 'Shipping Zip / Postal Code', 'edd' ); ?></label>
 			</p>
 			<?php do_action( 'edd_shipping_address_bottom' ); ?>
