@@ -13,6 +13,8 @@ class EDD_Simple_Shipping {
 
 	private static $instance;
 
+	private $is_domestic = true;
+
 	/**
 	 * Get active object instance
 	 *
@@ -83,6 +85,10 @@ class EDD_Simple_Shipping {
 
 		// Add our meta fields to the EDD save routine
 		add_filter( 'edd_metabox_fields_save', array( $this, 'meta_fields_save' ) );
+
+		// Check shipping rate when billing/shipping fields are changed
+		add_action( 'wp_ajax_edd_get_shipping_rate', array( $this, 'ajax_shipping_rate' ) );
+		add_action( 'wp_ajax_nopriv_edd_get_shipping_rate', array( $this, 'ajax_shipping_rate' ) );
 
 		// Apply shipping costs to the checkout
 		add_action( 'init', array( $this, 'apply_shipping_fees' ) );
@@ -222,8 +228,12 @@ class EDD_Simple_Shipping {
 	}
 
 
-	private function is_domestic() {
-		return true;
+	private function get_base_region() {
+
+		global $edd_options;
+
+		return isset( $edd_options['edd_simple_shipping_base_country'] ) ? $edd_options['edd_simple_shipping_base_country'] : 'US';
+
 	}
 
 
@@ -242,7 +252,7 @@ class EDD_Simple_Shipping {
 		foreach( $cart_contents as $item ) {
 			if( $this->item_has_shipping( $item['id'] ) ) {
 
-				if( $this->is_domestic() ) {
+				if( $this->is_domestic ) {
 
 					$amount += (float) get_post_meta( $item['id'], '_edd_shipping_domestic', true );
 
@@ -257,6 +267,24 @@ class EDD_Simple_Shipping {
 
 		return apply_filters( 'edd_simple_shipping_total', $amount );
 
+	}
+
+
+	public function ajax_shipping_rate() {
+
+		$country = $_POST['country'];
+
+		if( $country != $this->get_base_region() )
+			$this->is_domestic = false;
+
+		$total = $this->calc_total_shipping();
+
+		$response = array(
+			'total' => $total,
+			'formatted_total' => html_entity_decode( edd_currency_filter( edd_format_amount( $total ) ), ENT_COMPAT, 'UTF-8' ),
+		);
+
+		echo json_encode( $response );
 	}
 
 
@@ -301,9 +329,34 @@ class EDD_Simple_Shipping {
 
 		ob_start();
 ?>
-		<script type="text/javascript">jQuery(document).ready(function($){
+		<script type="text/javascript">var edd_global_vars; jQuery(document).ready(function($){
 			$('body').change('select[name=shipping_country]',function(){
-				if($('select[name=shipping_country]').val()=='US'){$('#shipping_state_other').css('display','none');$('#shipping_state_us').css('display','');$('#shipping_state_ca').css('display','none'); }else if( $('select[name=shipping_country]').val()=='CA'){$('#shipping_state_other').css('display','none');$('#shipping_state_us').css('display','none');$('#shipping_state_ca').css('display','');}else{$('#shipping_state_other').css('display','');$('#shipping_state_us').css('display','none');$('#shipping_state_ca').css('display','none');}
+				if($('select[name=shipping_country]').val()=='US')
+					{$('#shipping_state_other').css('display','none');$('#shipping_state_us').css('display','');$('#shipping_state_ca').css('display','none');
+				} else if( $('select[name=shipping_country]').val()=='CA'){
+					$('#shipping_state_other').css('display','none');$('#shipping_state_us').css('display','none');$('#shipping_state_ca').css('display','');
+				} else {
+					$('#shipping_state_other').css('display','');$('#shipping_state_us').css('display','none');$('#shipping_state_ca').css('display','none');
+				}
+				var postData = {
+		            action: 'edd_get_shipping_rate',
+		            country: $('select[name=shipping_country]').val()
+		        };
+		        $.ajax({
+		            type: "POST",
+		            data: postData,
+		            dataType: "json",
+		            url: edd_global_vars.ajaxurl,
+		            success: function (response) {
+		                if( response ) {
+		                	alert( response.msg );
+		                } else {
+		                    console.log( response );
+		                }
+		            }
+		        }).fail(function (data) {
+		            console.log(data);
+		        });
 			});
 			$('#edd_simple_shipping_show').change(function(){
 				$('#edd_simple_shipping_fields_wrap').toggle();
