@@ -93,6 +93,27 @@ class EDD_Simple_Shipping {
 		// Check for errors on checkout submission
 		add_action( 'edd_checkout_error_checks', array( $this, 'error_checks' ), 10, 2 );
 
+		// Store shipping info
+		add_action( 'edd_purchase_data_before_gateway', array( $this, 'set_shipping_info' ), 10, 2 );
+
+		// Display the user's shipping info in the View Details popup
+		add_action( 'edd_payment_personal_details_list', array( $this, 'show_shipping_details' ), 10, 2 );
+
+		// Set payment as not shipped
+		add_action( 'edd_insert_payment', array( $this, 'set_as_not_shipped' ), 10, 2 );
+
+		// Add the shipped status column
+		add_filter( 'edd_payments_table_columns', array( $this, 'add_shipped_column' ) );
+
+		// Display our Shipped? column value
+		add_filter( 'edd_payments_table_column', array( $this, 'display_shipped_column_value' ), 10, 3 );
+
+		// Add our Shipped? checkbox to the edit payment screen
+		add_action( 'edd_edit_payment_bottom', array( $this, 'edit_payment_option' ) );
+
+		// Update shipped status when a purchase is edited
+		add_action( 'edd_update_edited_purchase', array( $this, 'update_edited_purchase' ) );
+
 		// auto updater
 
 		// retrieve our license key from the DB
@@ -386,28 +407,166 @@ class EDD_Simple_Shipping {
 			if( empty( $post_data['billing_zip'] ) )
 				edd_set_error( 'missing_zip', __( 'Please enter a zip/postal code for shipping', 'edd-simple-shipping' ) );
 
-
 		}
 
 	}
 
 
-	public function store_shipping_info() {
+	// Add shipping info to the user_info
+	public function set_shipping_info( $purchase_data, $valid_data ) {
 
+		if( ! $this->cart_needs_shipping() )
+			return $purchase_data;
 
-		switch ( $shipping_info['shipping_country'] ) :
-			case 'US' :
-				$shipping_info['shipping_state'] = isset( $_POST['shipping_state_us'] )	? sanitize_text_field( $_POST['shipping_state_us'] ) 	: '';
-				break;
-			case 'CA' :
-				$shipping_info['shipping_state'] = isset( $_POST['shipping_state_ca'] )	? sanitize_text_field( $_POST['shipping_state_ca'] ) 	: '';
-				break;
-			default :
-				$shipping_info['shipping_state'] = isset( $_POST['shipping_state_other'] )? sanitize_text_field( $_POST['shipping_state_other'] ) : '';
-				break;
-		endswitch;
+		$shipping_info = array();
+
+		// Check to see if shipping is different than billing
+		if( isset( $_POST['edd_use_different_shipping'] ) || ! $this->has_billing_fields() ) {
+
+			$shipping_info['address']  = sanitize_text_field( $_POST['shipping_address'] );
+			$shipping_info['address2'] = sanitize_text_field( $_POST['shipping_address_2'] );
+			$shipping_info['city']     = sanitize_text_field( $_POST['shipping_city'] );
+			$shipping_info['zip']      = sanitize_text_field( $_POST['shipping_zip'] );
+			$shipping_info['country']  = sanitize_text_field( $_POST['shipping_country'] );
+
+			// Shipping address is different
+			switch ( $_POST['shipping_country'] ) :
+				case 'US' :
+					$shipping_info['state'] = isset( $_POST['shipping_state_us'] )	 ? sanitize_text_field( $_POST['shipping_state_us'] ) 	 : '';
+					break;
+				case 'CA' :
+					$shipping_info['state'] = isset( $_POST['shipping_state_ca'] )	 ? sanitize_text_field( $_POST['shipping_state_ca'] ) 	 : '';
+					break;
+				default :
+					$shipping_info['state'] = isset( $_POST['shipping_state_other'] ) ? sanitize_text_field( $_POST['shipping_state_other'] ) : '';
+					break;
+			endswitch;
+
+		} else {
+
+			$shipping_info['address']  = sanitize_text_field( $_POST['billing_address'] );
+			$shipping_info['address2'] = sanitize_text_field( $_POST['billing_address_2'] );
+			$shipping_info['city']     = sanitize_text_field( $_POST['billing_city'] );
+			$shipping_info['zip']      = sanitize_text_field( $_POST['billing_zip'] );
+			$shipping_info['country']  = sanitize_text_field( $_POST['billing_country'] );
+
+			// Shipping address is different
+			switch ( $_POST['billing_country'] ) :
+				case 'US' :
+					$shipping_info['state'] = isset( $_POST['billing_state_us'] )	 ? sanitize_text_field( $_POST['billing_state_us'] ) 	: '';
+					break;
+				case 'CA' :
+					$shipping_info['state'] = isset( $_POST['billing_state_ca'] )	 ? sanitize_text_field( $_POST['billing_state_ca'] ) 	: '';
+					break;
+				default :
+					$shipping_info['state'] = isset( $_POST['billing_state_other'] ) ? sanitize_text_field( $_POST['billing_state_other'] )  : '';
+					break;
+			endswitch;
+
+		}
+
+		$purchase_data['user_info']['shipping_info'] = $shipping_info;
+
+		return $purchase_data;
+
 	}
 
+
+	public function set_as_not_shipped( $payment_id = 0, $payment_data = array() ) {
+
+		$shipping_info = ! empty( $payment_data['user_info']['shipping_info'] ) ? $payment_data['user_info']['shipping_info'] : false;
+
+		if( ! $shipping_info )
+			return;
+
+		// Indicate that this purchase needs shipped
+		update_post_meta( $payment_id, '_edd_payment_shipping_status', '1' );
+
+	}
+
+
+	public function show_shipping_details( $payment_meta = array(), $user_info = array() ) {
+
+		$shipping_info = ! empty( $user_info['shipping_info'] ) ? $user_info['shipping_info'] : false;
+
+		if( ! $shipping_info )
+			return;
+
+		$countries = edd_get_country_list();
+
+		echo '<li><strong>' . __( 'Shipping Info', 'edd-simple-shipping' ) . '</strong></li>';
+		echo '<li>' . $shipping_info['address'] . '</li>';
+		if( ! empty( $shipping_info['address2'] ) )
+			echo '<li>' . $shipping_info['address2'] . '</li>';
+		echo '<li>' . $shipping_info['city'] . ', ' . $shipping_info['state'] . ' ' . $shipping_info['zip'] . '</li>';
+		echo '<li>' . $countries[ $shipping_info['country'] ] . '</li>';
+
+	}
+
+
+	public function add_shipped_column( $columns ) {
+		// Force the Shipped column to be placed just before Status
+		unset( $columns['status'] );
+		$columns['shipped'] = __( 'Shipped?', 'edd-simple-shipping' );
+		$columns['status']  = __( 'Status', 'edd' );
+		return $columns;
+	}
+
+	public function display_shipped_column_value( $value = '', $payment_id = 0, $column_name = '' ) {
+
+		if( $column_name == 'shipped' ) {
+			$shipping_status = get_post_meta( $payment_id, '_edd_payment_shipping_status', true );
+			if( $shipping_status == '1' ) {
+				$value = __( 'No', 'edd-simple-shipping' );
+			} elseif( $shipping_status == '2' ) {
+				$value = __( 'Yes', 'edd-simple-shipping' );
+			} else {
+				$value = __( 'N/A', 'edd-simple-shipping' );
+			}
+		}
+		return $value;
+	}
+
+	public function edit_payment_option( $payment_id = 0 ) {
+
+		$status  = get_post_meta( $payment_id, '_edd_payment_shipping_status', true );
+		if( ! $status )
+			return;
+
+		$shipped = $status == '2' ? true : false;
+?>
+	<tr>
+		<th scope="row" valign="top">
+			<span><?php _e( 'Shipped?', 'edd' ); ?></span>
+		</th>
+		<td>
+			<input type="checkbox" name="edd-payment-shipped" value="1"<?php checked( $shipped, true ); ?>/>
+			<span class="description"><?php _e( 'Check if this purchase has been shipped.', 'edd-simple-shipping' ); ?></span>
+		</td>
+	</tr>
+<?php
+	}
+
+
+	/**
+	 * Update Edited Purchase
+	 *
+	 * Updates the shipping status of a purchase to indicate it has been shipped
+	 *
+	 * @access      private
+	 * @since       1.0
+	 * @return      void
+	 */
+	public function update_edited_purchase( $payment_id = 0 ) {
+
+		$status  = get_post_meta( $payment_id, '_edd_payment_shipping_status', true );
+		if( ! $status || $status == '2' )
+			return;
+
+		if( isset( $_POST['edd-payment-shipped'] ) )
+			update_post_meta( $payment_id, '_edd_payment_shipping_status', '2' );
+
+	}
 
 	public static function license_settings( $settings ) {
 		$license_settings = array(
