@@ -73,7 +73,7 @@ class EDD_Simple_Shipping {
 		add_action( 'init', array( $this, 'textdomain' ) );
 
 		// register our license key settings
-		add_filter( 'edd_settings_misc', array( $this, 'license_settings' ), 1 );
+		add_filter( 'edd_settings_general', array( $this, 'license_settings' ), 1 );
 
 		// activate license key on settings save
 		add_action( 'admin_init', array( $this, 'activate_license' ) );
@@ -578,9 +578,16 @@ class EDD_Simple_Shipping {
 				'size' => 'regular'
 			),
 			array(
+				'id' => 'edd_simple_shipping_base_country',
+				'name' => __( 'Base Region', 'edd-simple-shipping'),
+				'desc' => __( 'Choose the country your store is based in', 'edd-simple-shipping '),
+				'type'  => 'select',
+				'options' => edd_get_country_list()
+			),
+			array(
 				'id' => 'edd_simple_shipping_license_key',
-				'name' => __('License Key', 'edd-simple-shipping'),
-				'desc' => __('Enter your license for Simple Shipping to receive automatic upgrades', 'edd-simple-shipping'),
+				'name' => __( 'License Key', 'edd-simple-shipping '),
+				'desc' => __( 'Enter your license for Simple Shipping to receive automatic upgrades', 'edd-simple-shipping '),
 				'type'  => 'license_key',
 				'size'  => 'regular',
 				'options' => array( 'is_valid_license_option' => 'edd_simple_shipping_license_active' )
@@ -592,15 +599,15 @@ class EDD_Simple_Shipping {
 
 	public static function activate_license() {
 		global $edd_options;
-		if( ! isset( $_POST['edd_settings_misc'] ) )
+		if( ! isset( $_POST['edd_settings_general'] ) )
 			return;
-		if( ! isset( $_POST['edd_settings_misc']['edd_simple_shipping_license_key'] ) )
+		if( ! isset( $_POST['edd_settings_general']['edd_simple_shipping_license_key'] ) )
 			return;
 
 		if( get_option( 'edd_simple_shipping_license_active' ) == 'valid' )
 			return;
 
-		$license = sanitize_text_field( $_POST['edd_settings_misc']['edd_simple_shipping_license_key'] );
+		$license = sanitize_text_field( $_POST['edd_settings_general']['edd_simple_shipping_license_key'] );
 
 		// data to send in our API request
 		$api_params = array(
