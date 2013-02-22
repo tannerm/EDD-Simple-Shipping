@@ -87,7 +87,11 @@ class EDD_Simple_Shipping {
 		// Apply shipping costs to the checkout
 		add_action( 'init', array( $this, 'apply_shipping_fees' ) );
 
-		add_action( 'edd_after_cc_fields', array( $this, 'address_fields' ), 100 );
+		// Display the shipping address fields
+		add_action( 'edd_purchase_form_after_cc_form', array( $this, 'address_fields' ), 100 );
+
+		// Check for errors on checkout submission
+		add_action( 'edd_checkout_error_checks', array( $this, 'error_checks' ), 10, 2 );
 
 		// auto updater
 
@@ -247,63 +251,161 @@ class EDD_Simple_Shipping {
 	}
 
 
+	private function needs_shipping_fields() {
+
+		return $this->cart_needs_shipping();
+
+	}
+
+	private function has_billing_fields() {
+
+		// Have to assume all gateways are using the default CC fields (they should be)
+		return did_action( 'edd_after_cc_fields', 'edd_default_cc_address_fields' );
+
+	}
+
+
+	private function hide_shipping_fields() {
+
+		return true;
+	}
+
+
 	public function address_fields() {
+
+		if( ! $this->needs_shipping_fields() )
+			return;
+
+		$display = $this->hide_shipping_fields() && $this->has_billing_fields() ? ' style="display:none;"' : '';
+
 		ob_start();
 ?>
-		<script type="text/javascript">jQuery(document).ready(function($) {$( 'body').change( 'select[name=shipping_country]', function() {if( $('select[name=shipping_country]').val() == 'US') {$('#shipping_state_other').css('display', 'none');$('#shipping_state_us').css('display', '');$('#shipping_state_ca').css('display', 'none');} else if( $('select[name=shipping_country]').val() == 'CA') {$('#shipping_state_other').css('display', 'none');$('#shipping_state_us').css('display', 'none');$('#shipping_state_ca').css('display', '');} else {$('#shipping_state_other').css('display', '');$('#shipping_state_us').css('display', 'none');$('#shipping_state_ca').css('display', 'none');}});});</script>
+		<script type="text/javascript">jQuery(document).ready(function($){
+			$('body').change('select[name=shipping_country]',function(){
+				if($('select[name=shipping_country]').val()=='US'){$('#shipping_state_other').css('display','none');$('#shipping_state_us').css('display','');$('#shipping_state_ca').css('display','none'); }else if( $('select[name=shipping_country]').val()=='CA'){$('#shipping_state_other').css('display','none');$('#shipping_state_us').css('display','none');$('#shipping_state_ca').css('display','');}else{$('#shipping_state_other').css('display','');$('#shipping_state_us').css('display','none');$('#shipping_state_ca').css('display','none');}
+			});
+			$('#edd_simple_shipping_show').change(function(){
+				$('#edd_simple_shipping_fields_wrap').toggle();
+			});
+		});</script>
+
+
 		<fieldset id="edd_simple_shipping">
-			<?php do_action( 'edd_shipping_address_top' ); ?>
-			<legend><?php _e( 'Shipping Details', 'edd-simple-shipping' ); ?></legend>
-			<p id="edd-shipping-address-wrap">
-				<input type="text" name="shipping_address" class="shipping-address edd-input" placeholder="<?php _e( 'Address line 1', 'edd' ); ?>"/>
-				<label class="edd-label"><?php _e( 'Shipping Address', 'edd' ); ?></label>
-			</p>
-			<p id="edd-shipping-address-2-wrap">
-				<input type="text" name="shipping_address_2" class="shipping-address-2 edd-input" placeholder="<?php _e( 'Address line 2', 'edd' ); ?>"/>
-				<label class="edd-label"><?php _e( 'Shipping Address Line 2', 'edd' ); ?></label>
-			</p>
-			<p id="edd-card-city-wrap">
-				<input type="text" name="shipping_city" class="card-city edd-input" placeholder="<?php _e( 'City', 'edd' ); ?>"/>
-				<label class="edd-label"><?php _e( 'Shipping City', 'edd' ); ?></label>
-			</p>
-			<p id="edd-card-country-wrap">
-				<select name="shipping_country" class="shipping-country edd-select">
-					<?php
-					$countries = edd_get_country_list();
-					foreach( $countries as $country_code => $country ) {
-					  echo '<option value="' . $country_code . '">' . $country . '</option>';
-					}
-					?>
-				</select>
-				<label class="edd-label"><?php _e( 'Shipping Country', 'edd' ); ?></label>
-			</p>
-			<p id="edd-card-state-wrap">
-				<input type="text" size="6" name="shipping_state_other" id="shipping_state_other" class="card-state edd-input" placeholder="<?php _e( 'State / Province', 'edd' ); ?>" style="display:none;"/>
-	            <select name="shipping_state_us" id="shipping_state_us" class="card-state edd-select">
-	                <?php
-	                    $states = edd_get_states_list();
-	                    foreach( $states as $state_code => $state ) {
-	                        echo '<option value="' . $state_code . '">' . $state . '</option>';
-	                    }
-	                ?>
-	            </select>
-	            <select name="shipping_state_ca" id="shipping_state_ca" class="card-state edd-select" style="display: none;">
-	                <?php
-	                    $provinces = edd_get_provinces_list();
-	                    foreach( $provinces as $province_code => $province ) {
-	                        echo '<option value="' . $province_code . '">' . $province . '</option>';
-	                    }
-	                ?>
-	            </select>
-				<label class="edd-label"><?php _e( 'Shipping State / Province', 'edd' ); ?></label>
-			</p>
-			<p id="edd-card-zip-wrap">
-				<input type="text" size="4" name="shipping_zip" class="card-zip edd-input" placeholder="<?php _e( 'Zip / Postal code', 'edd' ); ?>"/>
-				<label class="edd-label"><?php _e( 'Shipping Zip / Postal Code', 'edd' ); ?></label>
-			</p>
-			<?php do_action( 'edd_shipping_address_bottom' ); ?>
+			<?php if( $this->has_billing_fields() ) : ?>
+			<label for="edd_simple_shipping_show">
+				<input type="checkbox" id="edd_simple_shipping_show" name="edd_use_different_shipping" value="1"/>
+				<?php _e( 'Ship to Different Address?', 'edd-simple-shipping' ); ?>
+			</label>
+			<?php endif; ?>
+			<div id="edd_simple_shipping_fields_wrap"<?php echo $display; ?>>
+				<?php do_action( 'edd_shipping_address_top' ); ?>
+				<legend><?php _e( 'Shipping Details', 'edd-simple-shipping' ); ?></legend>
+				<p id="edd-shipping-address-wrap">
+					<input type="text" name="shipping_address" class="shipping-address edd-input" placeholder="<?php _e( 'Address line 1', 'edd' ); ?>"/>
+					<label class="edd-label"><?php _e( 'Shipping Address', 'edd' ); ?></label>
+				</p>
+				<p id="edd-shipping-address-2-wrap">
+					<input type="text" name="shipping_address_2" class="shipping-address-2 edd-input" placeholder="<?php _e( 'Address line 2', 'edd' ); ?>"/>
+					<label class="edd-label"><?php _e( 'Shipping Address Line 2', 'edd' ); ?></label>
+				</p>
+				<p id="edd-shipping-city-wrap">
+					<input type="text" name="shipping_city" class="shipping-city edd-input" placeholder="<?php _e( 'City', 'edd' ); ?>"/>
+					<label class="edd-label"><?php _e( 'Shipping City', 'edd' ); ?></label>
+				</p>
+				<p id="edd-shipping-country-wrap">
+					<select name="shipping_country" class="shipping-country edd-select">
+						<?php
+						$countries = edd_get_country_list();
+						foreach( $countries as $country_code => $country ) {
+						  echo '<option value="' . $country_code . '">' . $country . '</option>';
+						}
+						?>
+					</select>
+					<label class="edd-label"><?php _e( 'Shipping Country', 'edd' ); ?></label>
+				</p>
+				<p id="edd-shipping-state-wrap">
+					<input type="text" size="6" name="shipping_state_other" id="shipping_state_other" class="shipping-state edd-input" placeholder="<?php _e( 'State / Province', 'edd' ); ?>" style="display:none;"/>
+		            <select name="shipping_state_us" id="shipping_state_us" class="shipping-state edd-select">
+		                <?php
+		                    $states = edd_get_states_list();
+		                    foreach( $states as $state_code => $state ) {
+		                        echo '<option value="' . $state_code . '">' . $state . '</option>';
+		                    }
+		                ?>
+		            </select>
+		            <select name="shipping_state_ca" id="shipping_state_ca" class="shipping-state edd-select" style="display: none;">
+		                <?php
+		                    $provinces = edd_get_provinces_list();
+		                    foreach( $provinces as $province_code => $province ) {
+		                        echo '<option value="' . $province_code . '">' . $province . '</option>';
+		                    }
+		                ?>
+		            </select>
+					<label class="edd-label"><?php _e( 'Shipping State / Province', 'edd' ); ?></label>
+				</p>
+				<p id="edd-shipping-zip-wrap">
+					<input type="text" size="4" name="shipping_zip" class="shipping-zip edd-input" placeholder="<?php _e( 'Zip / Postal code', 'edd' ); ?>"/>
+					<label class="edd-label"><?php _e( 'Shipping Zip / Postal Code', 'edd' ); ?></label>
+				</p>
+				<?php do_action( 'edd_shipping_address_bottom' ); ?>
+			</div>
 		</fieldset>
 <?php 	echo ob_get_clean();
+	}
+
+
+	public function error_checks( $valid_data, $post_data ) {
+
+		// Only perform error checks if we have a product that needs shipping
+		if( ! $this->cart_needs_shipping() )
+			return;
+
+		// Check to see if shipping is different than billing
+		if( isset( $post_data['edd_use_different_shipping'] ) || ! $this->has_billing_fields() ) {
+
+			// Shipping address is different
+
+			if( empty( $post_data['shipping_address'] ) )
+				edd_set_error( 'missing_address', __( 'Please enter a shipping address', 'edd-simple-shipping' ) );
+
+			if( empty( $post_data['shipping_city'] ) )
+				edd_set_error( 'missing_city', __( 'Please enter a city for shipping', 'edd-simple-shipping' ) );
+
+			if( empty( $post_data['shipping_zip'] ) )
+				edd_set_error( 'missing_zip', __( 'Please enter a zip/postal code for shipping', 'edd-simple-shipping' ) );
+
+		} else {
+
+			// Shipping address is the same as billing
+			if( empty( $post_data['billing_address'] ) )
+				edd_set_error( 'missing_address', __( 'Please enter a shipping address', 'edd-simple-shipping' ) );
+
+			if( empty( $post_data['billing_city'] ) )
+				edd_set_error( 'missing_city', __( 'Please enter a city for shipping', 'edd-simple-shipping' ) );
+
+			if( empty( $post_data['billing_zip'] ) )
+				edd_set_error( 'missing_zip', __( 'Please enter a zip/postal code for shipping', 'edd-simple-shipping' ) );
+
+
+		}
+
+	}
+
+
+	public function store_shipping_info() {
+
+
+		switch ( $shipping_info['shipping_country'] ) :
+			case 'US' :
+				$shipping_info['shipping_state'] = isset( $_POST['shipping_state_us'] )	? sanitize_text_field( $_POST['shipping_state_us'] ) 	: '';
+				break;
+			case 'CA' :
+				$shipping_info['shipping_state'] = isset( $_POST['shipping_state_ca'] )	? sanitize_text_field( $_POST['shipping_state_ca'] ) 	: '';
+				break;
+			default :
+				$shipping_info['shipping_state'] = isset( $_POST['shipping_state_other'] )? sanitize_text_field( $_POST['shipping_state_other'] ) : '';
+				break;
+		endswitch;
 	}
 
 
