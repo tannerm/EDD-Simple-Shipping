@@ -75,7 +75,7 @@ class EDD_Simple_Shipping {
 		add_action( 'init', array( $this, 'textdomain' ) );
 
 		// register our license key settings
-		add_filter( 'edd_settings_general', array( $this, 'license_settings' ), 1 );
+		add_filter( 'edd_settings_general', array( $this, 'settings' ), 1 );
 
 		// activate license key on settings save
 		add_action( 'admin_init', array( $this, 'activate_license' ) );
@@ -136,6 +136,15 @@ class EDD_Simple_Shipping {
 
 	}
 
+
+	/**
+	 * Load plugin text domain
+	 *
+	 * @since 1.0
+	 *
+	 * @access private
+	 * @return void
+	 */
 	public static function textdomain() {
 
 		// Set filter for plugin's languages directory
@@ -148,6 +157,14 @@ class EDD_Simple_Shipping {
 	}
 
 
+	/**
+	 * Render the extra meta box fields
+	 *
+	 * @since 1.0
+	 *
+	 * @access private
+	 * @return void
+	 */
 	public function metabox( $post_id = 0 ) {
 
 		global $edd_options;
@@ -196,6 +213,15 @@ class EDD_Simple_Shipping {
 <?php
 	}
 
+
+	/**
+	 * Save our extra meta box fields
+	 *
+	 * @since 1.0
+	 *
+	 * @access private
+	 * @return array
+	 */
 	public function meta_fields_save( $fields ) {
 
 		// Tell EDD to save our extra meta fields
@@ -207,12 +233,28 @@ class EDD_Simple_Shipping {
 	}
 
 
+	/**
+	 * Determine if a product has snipping enabled
+	 *
+	 * @since 1.0
+	 *
+	 * @access private
+	 * @return bool
+	 */
 	private function item_has_shipping( $item_id = 0 ) {
 		$enabled = get_post_meta( $item_id, '_edd_enable_shipping', true );
 		return (bool) apply_filters( 'edd_simple_shipping_item_has_shipping', $enabled, $item_id );
 	}
 
 
+	/**
+	 * Determine if shipping costs need to be calculated for the cart
+	 *
+	 * @since 1.0
+	 *
+	 * @access private
+	 * @return bool
+	 */
 	private function cart_needs_shipping() {
 		$cart_contents = edd_get_cart_contents();
 		$ret = false;
@@ -228,6 +270,16 @@ class EDD_Simple_Shipping {
 	}
 
 
+	/**
+	 * Get the base country (where the store is located)
+	 *
+	 * This is used for determining if customer should be charged domestic or international shipping
+	 *
+	 * @since 1.0
+	 *
+	 * @access private
+	 * @return string
+	 */
 	private function get_base_region() {
 
 		global $edd_options;
@@ -237,6 +289,14 @@ class EDD_Simple_Shipping {
 	}
 
 
+	/**
+	 * Calculate the total shipping costs on the cart
+	 *
+	 * @since 1.0
+	 *
+	 * @access public
+	 * @return float
+	 */
 	public function calc_total_shipping() {
 
 		if( ! $this->cart_needs_shipping() )
@@ -270,42 +330,96 @@ class EDD_Simple_Shipping {
 	}
 
 
+	/**
+	 * Update the shipping costs via ajax
+	 *
+	 * This fires when the customer changes the country they are shipping to
+	 *
+	 * @since 1.0
+	 *
+	 * @access private
+	 * @return void
+	 */
 	public function ajax_shipping_rate() {
 
 		$country = $_POST['country'];
+		$total   = edd_get_cart_total();
+		$current = EDD()->fees->get_fee( 'simple_shipping' );
+
+		// Get rid of our current shipping
+		$total -= $current['amount'];
+		EDD()->fees->remove_fee( 'simple_shipping' );
 
 		if( $country != $this->get_base_region() )
 			$this->is_domestic = false;
 
-		$total = $this->calc_total_shipping();
+		// Calculate new shipping
+		$shipping = $this->calc_total_shipping();
 
+		EDD()->fees->add_fee( $shipping, __( 'Shipping Costs', 'edd-simple-shipping' ), 'simple_shipping' );
+
+		// Add our shipping to the total
+		$total += $shipping;
+
+		// Setup out response
 		$response = array(
-			'total' => $total,
-			'formatted_total' => html_entity_decode( edd_currency_filter( edd_format_amount( $total ) ), ENT_COMPAT, 'UTF-8' ),
+			'shipping_amount' => html_entity_decode( edd_currency_filter( edd_format_amount( $shipping ) ), ENT_COMPAT, 'UTF-8' ),
+			'total' => html_entity_decode( edd_currency_filter( edd_format_amount( $total ) ), ENT_COMPAT, 'UTF-8' ),
 		);
 
 		echo json_encode( $response );
+
+		die();
 	}
 
 
+	/**
+	 * Apply the shipping fees to the cart
+	 *
+	 * @since 1.0
+	 *
+	 * @access private
+	 * @return void
+	 */
 	public function apply_shipping_fees() {
 
-		if( ! $this->cart_needs_shipping() )
+		if( ! $this->cart_needs_shipping() ) {
+			EDD()->fees->remove_fee( 'simple_shipping' );
 			return;
+		}
 
 		$amount = $this->calc_total_shipping();
 
-		EDD()->fees->add_fee( $amount, __( 'Shipping Costs', 'edd-simple-shipping' ) );
+		EDD()->fees->add_fee( $amount, __( 'Shipping Costs', 'edd-simple-shipping' ), 'simple_shipping' );
 
 	}
 
 
+	/**
+	 * Determine if the shipping fields should be displayed
+	 *
+	 * @since 1.0
+	 *
+	 * @access private
+	 * @return bool
+	 */
 	private function needs_shipping_fields() {
 
 		return $this->cart_needs_shipping();
 
 	}
 
+
+	/**
+	 * Determine if the current payment method has billing fields
+	 *
+	 * If no billing fields are present, the shipping fields are always displayed
+	 *
+	 * @since 1.0
+	 *
+	 * @access private
+	 * @return bool
+	 */
 	private function has_billing_fields() {
 
 		// Have to assume all gateways are using the default CC fields (they should be)
@@ -314,18 +428,20 @@ class EDD_Simple_Shipping {
 	}
 
 
-	private function hide_shipping_fields() {
-
-		return true;
-	}
-
-
+	/**
+	 * Shipping info fields
+	 *
+	 * @since 1.0
+	 *
+	 * @access public
+	 * @return void
+	 */
 	public function address_fields() {
 
 		if( ! $this->needs_shipping_fields() )
 			return;
 
-		$display = $this->hide_shipping_fields() && $this->has_billing_fields() ? ' style="display:none;"' : '';
+		$display = $this->has_billing_fields() ? ' style="display:none;"' : '';
 
 		ob_start();
 ?>
@@ -349,7 +465,8 @@ class EDD_Simple_Shipping {
 		            url: edd_global_vars.ajaxurl,
 		            success: function (response) {
 		                if( response ) {
-		                	alert( response.msg );
+		                	$('.edd_cart_amount').text( response.total );
+		                	$('#edd_cart_fee_simple_shipping .edd_cart_fee_amount').text( response.shipping_amount );
 		                } else {
 		                    console.log( response );
 		                }
@@ -428,6 +545,14 @@ class EDD_Simple_Shipping {
 	}
 
 
+	/**
+	 * Perform error checks during checkout
+	 *
+	 * @since 1.0
+	 *
+	 * @access public
+	 * @return void
+	 */
 	public function error_checks( $valid_data, $post_data ) {
 
 		// Only perform error checks if we have a product that needs shipping
@@ -465,7 +590,14 @@ class EDD_Simple_Shipping {
 	}
 
 
-	// Add shipping info to the user_info
+	/**
+	 * Attach our shipping info to the payment gateway daya
+	 *
+	 * @since 1.0
+	 *
+	 * @access public
+	 * @return array
+	 */
 	public function set_shipping_info( $purchase_data, $valid_data ) {
 
 		if( ! $this->cart_needs_shipping() )
@@ -525,6 +657,16 @@ class EDD_Simple_Shipping {
 	}
 
 
+	/**
+	 * Set a purchase as not shipped
+	 *
+	 * This is so that we can grab all purchases in need of being shipped
+	 *
+	 * @since 1.0
+	 *
+	 * @access public
+	 * @return void
+	 */
 	public function set_as_not_shipped( $payment_id = 0, $payment_data = array() ) {
 
 		$shipping_info = ! empty( $payment_data['user_info']['shipping_info'] ) ? $payment_data['user_info']['shipping_info'] : false;
@@ -538,6 +680,14 @@ class EDD_Simple_Shipping {
 	}
 
 
+	/**
+	 * Display shipping details in the View Details popup
+	 *
+	 * @since 1.0
+	 *
+	 * @access public
+	 * @return void
+	 */
 	public function show_shipping_details( $payment_meta = array(), $user_info = array() ) {
 
 		$shipping_info = ! empty( $user_info['shipping_info'] ) ? $user_info['shipping_info'] : false;
@@ -557,6 +707,14 @@ class EDD_Simple_Shipping {
 	}
 
 
+	/**
+	 * Add a shipped status column to Payment History
+	 *
+	 * @since 1.0
+	 *
+	 * @access public
+	 * @return array
+	 */
 	public function add_shipped_column( $columns ) {
 		// Force the Shipped column to be placed just before Status
 		unset( $columns['status'] );
@@ -565,6 +723,15 @@ class EDD_Simple_Shipping {
 		return $columns;
 	}
 
+
+	/**
+	 * Display the shipped status
+	 *
+	 * @since 1.0
+	 *
+	 * @access public
+	 * @return string
+	 */
 	public function display_shipped_column_value( $value = '', $payment_id = 0, $column_name = '' ) {
 
 		if( $column_name == 'shipped' ) {
@@ -580,6 +747,15 @@ class EDD_Simple_Shipping {
 		return $value;
 	}
 
+
+	/**
+	 * Add a Shipped? checkbox to the edit payment screen
+	 *
+	 * @since 1.0
+	 *
+	 * @access public
+	 * @return void
+	 */
 	public function edit_payment_option( $payment_id = 0 ) {
 
 		$status  = get_post_meta( $payment_id, '_edd_payment_shipping_status', true );
@@ -606,7 +782,7 @@ class EDD_Simple_Shipping {
 	 *
 	 * Updates the shipping status of a purchase to indicate it has been shipped
 	 *
-	 * @access      private
+	 * @access      public
 	 * @since       1.0
 	 * @return      void
 	 */
@@ -621,8 +797,17 @@ class EDD_Simple_Shipping {
 
 	}
 
-	public static function license_settings( $settings ) {
-		$license_settings = array(
+
+	/**
+	 * Add our extension settings
+	 *
+	 * @since 1.0
+	 *
+	 * @access public
+	 * @return array
+	 */
+	public function settings( $settings ) {
+		$settings = array(
 			array(
 				'id' => 'edd_simple_shipping_license_header',
 				'name' => '<strong>' . __( 'Simple Shipping', 'edd-simple-shipping' ) . '</strong>',
@@ -647,11 +832,22 @@ class EDD_Simple_Shipping {
 			)
 		);
 
-		return array_merge( $settings, $license_settings );
+		return array_merge( $settings, $settings );
 	}
 
-	public static function activate_license() {
+
+	/**
+	 * Activate a license key
+	 *
+	 * @since 1.0
+	 *
+	 * @access public
+	 * @return void
+	 */
+	public function activate_license() {
+
 		global $edd_options;
+
 		if( ! isset( $_POST['edd_settings_general'] ) )
 			return;
 		if( ! isset( $_POST['edd_settings_general']['edd_simple_shipping_license_key'] ) )
@@ -685,6 +881,15 @@ class EDD_Simple_Shipping {
 
 }
 
+
+/**
+ * Get everything running
+ *
+ * @since 1.0
+ *
+ * @access private
+ * @return void
+ */
 
 function edd_simple_shipping_load() {
 	$edd_simple_shipping = new EDD_Simple_Shipping();
