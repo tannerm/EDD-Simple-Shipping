@@ -111,6 +111,12 @@ class EDD_Simple_Shipping {
 		// Add the shipped status column
 		add_filter( 'edd_payments_table_columns', array( $this, 'add_shipped_column' ) );
 
+		// Make our Shipped? column sortable
+		add_filter( 'edd_payments_table_sortable_columns', array( $this, 'add_sortable_column' ) );
+
+		// Sort the payment history by orders that have been shipped or not
+		add_filter( 'edd_get_payments_args', array( $this, 'sort_payments' ) );
+
 		// Display our Shipped? column value
 		add_filter( 'edd_payments_table_column', array( $this, 'display_shipped_column_value' ), 10, 3 );
 
@@ -448,11 +454,11 @@ class EDD_Simple_Shipping {
 		<script type="text/javascript">var edd_global_vars; jQuery(document).ready(function($){
 			$('body').change('select[name=shipping_country]',function(){
 				if($('select[name=shipping_country]').val()=='US')
-					{$('#shipping_state_other').css('display','none');$('#shipping_state_us').css('display','');$('#shipping_state_ca').css('display','none');
+					{$('#shipping_state_other').hide();$('#shipping_state_us').show();$('#shipping_state_ca').hide();
 				} else if( $('select[name=shipping_country]').val()=='CA'){
-					$('#shipping_state_other').css('display','none');$('#shipping_state_us').css('display','none');$('#shipping_state_ca').css('display','');
+					$('#shipping_state_other').hide();$('#shipping_state_us').hide();$('#shipping_state_ca').show();
 				} else {
-					$('#shipping_state_other').css('display','');$('#shipping_state_us').css('display','none');$('#shipping_state_ca').css('display','none');
+					$('#shipping_state_other').show();$('#shipping_state_us').hide();$('#shipping_state_ca').hide();
 				}
 				var postData = {
 		            action: 'edd_get_shipping_rate',
@@ -725,6 +731,42 @@ class EDD_Simple_Shipping {
 
 
 	/**
+	 * Make the Shipped? column sortable
+	 *
+	 * @since 1.0
+	 *
+	 * @access public
+	 * @return array
+	 */
+	public function add_sortable_column( $columns ) {
+		$columns['shipped'] = array( 'shipped', false );
+		return $columns;
+	}
+
+
+	/**
+	 * Sort payment history by shipped status
+	 *
+	 * @since 1.0
+	 *
+	 * @access public
+	 * @return array
+	 */
+	public function sort_payments( $args ) {
+
+		if( isset( $_GET['orderby'] ) && $_GET['orderby'] == 'shipped' ) {
+
+			$args['orderby'] = 'meta_value';
+			$args['meta_key'] = '_edd_payment_shipping_status';
+
+		}
+
+		return $args;
+
+	}
+
+
+	/**
 	 * Display the shipped status
 	 *
 	 * @since 1.0
@@ -807,7 +849,7 @@ class EDD_Simple_Shipping {
 	 * @return array
 	 */
 	public function settings( $settings ) {
-		$settings = array(
+		$license_settings = array(
 			array(
 				'id' => 'edd_simple_shipping_license_header',
 				'name' => '<strong>' . __( 'Simple Shipping', 'edd-simple-shipping' ) . '</strong>',
@@ -832,7 +874,7 @@ class EDD_Simple_Shipping {
 			)
 		);
 
-		return array_merge( $settings, $settings );
+		return array_merge( $settings, $license_settings );
 	}
 
 
