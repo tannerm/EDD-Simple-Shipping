@@ -225,6 +225,15 @@ class EDD_Simple_Shipping {
 <?php
 	}
 
+
+	/**
+	 *Add the table header cell for price shipping
+	 *
+	 * @since 1.0
+	 *
+	 * @access private
+	 * @return void
+	 */
 	function price_header( $post_id = 0 ) {
 		$enabled       = get_post_meta( $post_id, '_edd_enable_shipping', true );
 		$display       = $enabled ? '' : 'style="display:none;"';
@@ -233,6 +242,15 @@ class EDD_Simple_Shipping {
 <?php
 	}
 
+
+	/**
+	 *Add the table cell for price shipping
+	 *
+	 * @since 1.0
+	 *
+	 * @access private
+	 * @return void
+	 */
 	function price_row( $post_id = 0, $price_key = 0, $args = array() ) {
 		$enabled       = get_post_meta( $post_id, '_edd_enable_shipping', true );
 		$display       = $enabled ? '' : 'style="display:none;"';
