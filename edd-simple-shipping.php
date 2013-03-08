@@ -83,6 +83,12 @@ class EDD_Simple_Shipping {
 		// Add the meta box fields to Download Configuration
 		add_action( 'edd_meta_box_fields', array( $this, 'metabox' ), 10 );
 
+		// Add our variable pricing shipping header
+		add_action( 'edd_download_price_table_head', array( $this, 'price_header' ), 10 );
+
+		// Add our variable pricing shipping options
+		add_action( 'edd_download_price_table_row', array( $this, 'price_row' ), 10, 3 );
+
 		// Add our meta fields to the EDD save routine
 		add_filter( 'edd_metabox_fields_save', array( $this, 'meta_fields_save' ) );
 
@@ -181,7 +187,7 @@ class EDD_Simple_Shipping {
 		$international = get_post_meta( $post_id, '_edd_shipping_international', true );
 ?>
 		<div id="edd_simple_shipping">
-			<script type="text/javascript">jQuery(document).ready(function($){$('#edd_enable_shipping').on('click',function(){$('#edd_simple_shipping_fields').toggle();});});</script>
+			<script type="text/javascript">jQuery(document).ready(function($){$('#edd_enable_shipping').on('click',function(){$('#edd_simple_shipping_fields,.edd_prices_shipping').toggle();});});</script>
 			<p><strong><?php _e( 'Shipping Options', 'edd-simple-shipping' ); ?></strong></p>
 			<p>
 				<label for="edd_enable_shipping">
@@ -189,31 +195,56 @@ class EDD_Simple_Shipping {
 					<?php printf( __( 'Enable shipping for this %s', 'edd-simple-shipping' ), edd_get_label_singular() ); ?>
 				</label>
 			</p>
-			<table id="edd_simple_shipping_fields" <?php echo $display; ?>>
-				<tr>
-					<td>
-						<label for="edd_shipping_domestic"><?php _e( 'Domestic Rate:', 'edd-simple-shipping' ); ?>&nbsp;</label>
-					</td>
-					<td>
-						<?php if( ! isset( $edd_options['currency_position'] ) || $edd_options['currency_position'] == 'before' ) : ?>
-							<span><?php echo edd_currency_filter( '' ); ?></span><input type="number" min="0" step="0.01" class="small-text" value="<?php esc_attr_e( $domestic ); ?>" id="edd_shipping_domestic" name="_edd_shipping_domestic"/>
-						<?php else : ?>
-							<input type="number" min="0" step="0.01" class="small-text" value="<?php esc_attr_e( $domestic ); ?>" id="edd_shipping_domestic" name="_edd_shipping_domestic"/><?php echo edd_currency_filter( '' ); ?>
-						<?php endif; ?>
-					</td>
-					<td>
-						<label for="edd_shipping_international"><?php _e( 'International Rate:', 'edd-simple-shipping' ); ?>&nbsp;</label>
-					</td>
-					<td>
-						<?php if( ! isset( $edd_options['currency_position'] ) || $edd_options['currency_position'] == 'before' ) : ?>
-							<span><?php echo edd_currency_filter( '' ); ?></span><input type="number" min="0" step="0.01" class="small-text" value="<?php esc_attr_e( $international ); ?>" id="edd_shipping_international" name="_edd_shipping_international"/>
-						<?php else : ?>
-							<input type="number" min="0" step="0.01" class="small-text" value="<?php esc_attr_e( $international ); ?>" id="edd_shipping_international" name="_edd_shipping_international"/><?php echo edd_currency_filter( '' ); ?>
-						<?php endif; ?>
-					</td>
-				</tr>
-			</table>
+			<div id="edd_simple_shipping_fields" <?php echo $display; ?>>
+				<table>
+					<tr>
+						<td>
+							<label for="edd_shipping_domestic"><?php _e( 'Domestic Rate:', 'edd-simple-shipping' ); ?>&nbsp;</label>
+						</td>
+						<td>
+							<?php if( ! isset( $edd_options['currency_position'] ) || $edd_options['currency_position'] == 'before' ) : ?>
+								<span><?php echo edd_currency_filter( '' ); ?></span><input type="number" min="0" step="0.01" class="small-text" value="<?php esc_attr_e( $domestic ); ?>" id="edd_shipping_domestic" name="_edd_shipping_domestic"/>
+							<?php else : ?>
+								<input type="number" min="0" step="0.01" class="small-text" value="<?php esc_attr_e( $domestic ); ?>" id="edd_shipping_domestic" name="_edd_shipping_domestic"/><?php echo edd_currency_filter( '' ); ?>
+							<?php endif; ?>
+						</td>
+						<td>
+							<label for="edd_shipping_international"><?php _e( 'International Rate:', 'edd-simple-shipping' ); ?>&nbsp;</label>
+						</td>
+						<td>
+							<?php if( ! isset( $edd_options['currency_position'] ) || $edd_options['currency_position'] == 'before' ) : ?>
+								<span><?php echo edd_currency_filter( '' ); ?></span><input type="number" min="0" step="0.01" class="small-text" value="<?php esc_attr_e( $international ); ?>" id="edd_shipping_international" name="_edd_shipping_international"/>
+							<?php else : ?>
+								<input type="number" min="0" step="0.01" class="small-text" value="<?php esc_attr_e( $international ); ?>" id="edd_shipping_international" name="_edd_shipping_international"/><?php echo edd_currency_filter( '' ); ?>
+							<?php endif; ?>
+						</td>
+					</tr>
+				</table>
+			</div>
 		</div>
+<?php
+	}
+
+	function price_header( $post_id = 0 ) {
+		$enabled       = get_post_meta( $post_id, '_edd_enable_shipping', true );
+		$display       = $enabled ? '' : 'style="display:none;"';
+?>
+		<th class="edd_prices_shipping"<?php echo $display; ?>><?php _e( 'Shipping', 'edd-simple-shipping' ); ?></th>
+<?php
+	}
+
+	function price_row( $post_id = 0, $price_key = 0, $args = array() ) {
+		$enabled       = get_post_meta( $post_id, '_edd_enable_shipping', true );
+		$display       = $enabled ? '' : 'style="display:none;"';
+		$prices        = edd_get_variable_prices( $post_id );
+		$shipping      = isset( $prices[ $price_key ]['shipping'] ) ? $prices[ $price_key ]['shipping'] : '';
+?>
+		<td class="edd_prices_shipping"<?php echo $display; ?>>
+			<label for="edd_variable_prices[<?php echo $price_key; ?>][shipping]">
+				<input type="checkbox" value="1"<?php checked( true, $shipping ); ?> id="edd_variable_prices[<?php echo $price_key; ?>][shipping]" name="edd_variable_prices[<?php echo $price_key; ?>][shipping]" style="float:left;width:auto;margin:2px 5px 0 0;"/>
+				<span><?php _e( 'Check to enable shipping costs for this price.', 'edd-simple-shipping' ); ?></span>
+		</label>
+		</td>
 <?php
 	}
 
