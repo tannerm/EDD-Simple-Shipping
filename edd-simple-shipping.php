@@ -94,7 +94,7 @@ class EDD_Simple_Shipping {
 		add_action( 'init', array( $this, 'apply_shipping_fees' ) );
 
 		// Display the shipping address fields
-		add_action( 'edd_purchase_form_after_cc_form', array( $this, 'address_fields' ), 100 );
+		add_action( 'edd_purchase_form_after_cc_form', array( $this, 'address_fields' ), 0 );
 
 		// Check for errors on checkout submission
 		add_action( 'edd_checkout_error_checks', array( $this, 'error_checks' ), 10, 2 );
@@ -487,7 +487,7 @@ class EDD_Simple_Shipping {
 		});</script>
 
 
-		<fieldset id="edd_simple_shipping">
+		<div id="edd_simple_shipping">
 			<?php if( $this->has_billing_fields() ) : ?>
 			<label for="edd_simple_shipping_show">
 				<input type="checkbox" id="edd_simple_shipping_show" name="edd_use_different_shipping" value="1"/>
@@ -495,63 +495,66 @@ class EDD_Simple_Shipping {
 			</label>
 			<?php endif; ?>
 			<div id="edd_simple_shipping_fields_wrap"<?php echo $display; ?>>
-				<?php do_action( 'edd_shipping_address_top' ); ?>
-				<legend><?php _e( 'Shipping Details', 'edd-simple-shipping' ); ?></legend>
-				<p id="edd-shipping-address-wrap">
-					<label class="edd-label"><?php _e( 'Shipping Address', 'edd-simple-shipping' ); ?></label>
-					<span class="edd-description"><?php _e( 'The address to ship your purchase to.', 'edd-simple-shipping' ); ?></span>
-					<input type="text" name="shipping_address" class="shipping-address edd-input" placeholder="<?php _e( 'Address line 1', 'edd-simple-shipping' ); ?>"/>
-				</p>
-				<p id="edd-shipping-address-2-wrap">
-					<label class="edd-label"><?php _e( 'Shipping Address Line 2', 'edd-simple-shipping' ); ?></label>
-					<span class="edd-description"><?php _e( 'The suite, apt no, PO box, etc, associated with your shipping address.', 'edd-simple-shipping' ); ?></span>
-					<input type="text" name="shipping_address_2" class="shipping-address-2 edd-input" placeholder="<?php _e( 'Address line 2', 'edd-simple-shipping' ); ?>"/>
-				</p>
-				<p id="edd-shipping-city-wrap">
-					<label class="edd-label"><?php _e( 'Shipping City', 'edd-simple-shipping' ); ?></label>
-					<span class="edd-description"><?php _e( 'The city for your shipping address.', 'edd-simple-shipping' ); ?></span>
-					<input type="text" name="shipping_city" class="shipping-city edd-input" placeholder="<?php _e( 'City', 'edd-simple-shipping' ); ?>"/>
-				</p>
-				<p id="edd-shipping-country-wrap">
-					<label class="edd-label"><?php _e( 'Shipping Country', 'edd-simple-shipping' ); ?></label>
-					<span class="edd-description"><?php _e( 'The country for your shipping address.', 'edd-simple-shipping' ); ?></span>
-					<select name="shipping_country" class="shipping-country edd-select">
-						<?php
-						$countries = edd_get_country_list();
-						foreach( $countries as $country_code => $country ) {
-						  echo '<option value="' . $country_code . '">' . $country . '</option>';
-						}
-						?>
-					</select>
-				</p>
-				<p id="edd-shipping-state-wrap">
-					<label class="edd-label"><?php _e( 'Shipping State / Province', 'edd-simple-shipping' ); ?></label>
-					<span class="edd-description"><?php _e( 'The state / province for your shipping address.', 'edd-simple-shipping' ); ?></span>
-					<input type="text" size="6" name="shipping_state_other" id="shipping_state_other" class="shipping-state edd-input" placeholder="<?php _e( 'State / Province', 'edd-simple-shipping' ); ?>" style="display:none;"/>
-		            <select name="shipping_state_us" id="shipping_state_us" class="shipping-state edd-select">
-		                <?php
-		                    $states = edd_get_states_list();
-		                    foreach( $states as $state_code => $state ) {
-		                        echo '<option value="' . $state_code . '">' . $state . '</option>';
-		                    }
-		                ?>
-		            </select>
-		            <select name="shipping_state_ca" id="shipping_state_ca" class="shipping-state edd-select" style="display: none;">
-		                <?php
-		                    $provinces = edd_get_provinces_list();
-		                    foreach( $provinces as $province_code => $province ) {
-		                        echo '<option value="' . $province_code . '">' . $province . '</option>';
-		                    }
-		                ?>
-		            </select>
-				</p>
-				<p id="edd-shipping-zip-wrap">
-					<label class="edd-label"><?php _e( 'Shipping Zip / Postal Code', 'edd-simple-shipping' ); ?></label>
-					<input type="text" size="4" name="shipping_zip" class="shipping-zip edd-input" placeholder="<?php _e( 'Zip / Postal code', 'edd-simple-shipping' ); ?>"/>
-				</p>
-				<?php do_action( 'edd_shipping_address_bottom' ); ?>
+				<fieldset id="edd_simple_shipping_fields">
+					<?php do_action( 'edd_shipping_address_top' ); ?>
+					<legend><?php _e( 'Shipping Details', 'edd-simple-shipping' ); ?></legend>
+					<p id="edd-shipping-address-wrap">
+						<label class="edd-label"><?php _e( 'Shipping Address', 'edd-simple-shipping' ); ?></label>
+						<span class="edd-description"><?php _e( 'The address to ship your purchase to.', 'edd-simple-shipping' ); ?></span>
+						<input type="text" name="shipping_address" class="shipping-address edd-input" placeholder="<?php _e( 'Address line 1', 'edd-simple-shipping' ); ?>"/>
+					</p>
+					<p id="edd-shipping-address-2-wrap">
+						<label class="edd-label"><?php _e( 'Shipping Address Line 2', 'edd-simple-shipping' ); ?></label>
+						<span class="edd-description"><?php _e( 'The suite, apt no, PO box, etc, associated with your shipping address.', 'edd-simple-shipping' ); ?></span>
+						<input type="text" name="shipping_address_2" class="shipping-address-2 edd-input" placeholder="<?php _e( 'Address line 2', 'edd-simple-shipping' ); ?>"/>
+					</p>
+					<p id="edd-shipping-city-wrap">
+						<label class="edd-label"><?php _e( 'Shipping City', 'edd-simple-shipping' ); ?></label>
+						<span class="edd-description"><?php _e( 'The city for your shipping address.', 'edd-simple-shipping' ); ?></span>
+						<input type="text" name="shipping_city" class="shipping-city edd-input" placeholder="<?php _e( 'City', 'edd-simple-shipping' ); ?>"/>
+					</p>
+					<p id="edd-shipping-country-wrap">
+						<label class="edd-label"><?php _e( 'Shipping Country', 'edd-simple-shipping' ); ?></label>
+						<span class="edd-description"><?php _e( 'The country for your shipping address.', 'edd-simple-shipping' ); ?></span>
+						<select name="shipping_country" class="shipping-country edd-select">
+							<?php
+							$countries = edd_get_country_list();
+							foreach( $countries as $country_code => $country ) {
+							  echo '<option value="' . $country_code . '">' . $country . '</option>';
+							}
+							?>
+						</select>
+					</p>
+					<p id="edd-shipping-state-wrap">
+						<label class="edd-label"><?php _e( 'Shipping State / Province', 'edd-simple-shipping' ); ?></label>
+						<span class="edd-description"><?php _e( 'The state / province for your shipping address.', 'edd-simple-shipping' ); ?></span>
+						<input type="text" size="6" name="shipping_state_other" id="shipping_state_other" class="shipping-state edd-input" placeholder="<?php _e( 'State / Province', 'edd-simple-shipping' ); ?>" style="display:none;"/>
+			            <select name="shipping_state_us" id="shipping_state_us" class="shipping-state edd-select">
+			                <?php
+			                    $states = edd_get_states_list();
+			                    foreach( $states as $state_code => $state ) {
+			                        echo '<option value="' . $state_code . '">' . $state . '</option>';
+			                    }
+			                ?>
+			            </select>
+			            <select name="shipping_state_ca" id="shipping_state_ca" class="shipping-state edd-select" style="display: none;">
+			                <?php
+			                    $provinces = edd_get_provinces_list();
+			                    foreach( $provinces as $province_code => $province ) {
+			                        echo '<option value="' . $province_code . '">' . $province . '</option>';
+			                    }
+			                ?>
+			            </select>
+					</p>
+					<p id="edd-shipping-zip-wrap">
+						<label class="edd-label"><?php _e( 'Shipping Zip / Postal Code', 'edd-simple-shipping' ); ?></label>
+						<span class="edd-description"><?php _e( 'The zip / postal code for your shipping address.', 'edd-simple-shipping' ); ?></span>
+						<input type="text" size="4" name="shipping_zip" class="shipping-zip edd-input" placeholder="<?php _e( 'Zip / Postal code', 'edd-simple-shipping' ); ?>"/>
+					</p>
+					<?php do_action( 'edd_shipping_address_bottom' ); ?>
+				</fieldset>
 			</div>
-		</fieldset>
+		</div>
 <?php 	echo ob_get_clean();
 	}
 
