@@ -201,8 +201,6 @@ class EDD_Simple_Shipping {
 							<input type="number" min="0" step="0.01" class="small-text" value="<?php esc_attr_e( $domestic ); ?>" id="edd_shipping_domestic" name="_edd_shipping_domestic"/><?php echo edd_currency_filter( '' ); ?>
 						<?php endif; ?>
 					</td>
-				</tr>
-				<tr>
 					<td>
 						<label for="edd_shipping_international"><?php _e( 'International Rate:', 'edd-simple-shipping' ); ?>&nbsp;</label>
 					</td>
