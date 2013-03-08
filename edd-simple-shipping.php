@@ -81,7 +81,7 @@ class EDD_Simple_Shipping {
 		add_action( 'admin_init', array( $this, 'activate_license' ) );
 
 		// Add the meta box fields to Download Configuration
-		add_action( 'edd_meta_box_fields', array( $this, 'metabox' ), 300 );
+		add_action( 'edd_meta_box_fields', array( $this, 'metabox' ), 10 );
 
 		// Add our meta fields to the EDD save routine
 		add_filter( 'edd_metabox_fields_save', array( $this, 'meta_fields_save' ) );
