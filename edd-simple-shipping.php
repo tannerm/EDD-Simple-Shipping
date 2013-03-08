@@ -294,9 +294,29 @@ class EDD_Simple_Shipping {
 	 * @access private
 	 * @return bool
 	 */
-	private function item_has_shipping( $item_id = 0 ) {
-		$enabled = get_post_meta( $item_id, '_edd_enable_shipping', true );
+	private function item_has_shipping( $item_id = 0, $price_id = 0 ) {
+		$enabled          = get_post_meta( $item_id, '_edd_enable_shipping', true );
+		$variable_pricing = edd_has_variable_prices( $item_id );
+
+		if( $variable_pricing && ! $this->price_has_shipping( $item_id, $price_id ) )
+			$enabled = false;
+
 		return (bool) apply_filters( 'edd_simple_shipping_item_has_shipping', $enabled, $item_id );
+	}
+
+
+	/**
+	 * Determine if a price option has snipping enabled
+	 *
+	 * @since 1.0
+	 *
+	 * @access private
+	 * @return bool
+	 */
+	private function price_has_shipping( $item_id = 0, $price_id = 0 ) {
+		$prices = edd_get_variable_prices( $item_id );
+		$ret    = isset( $prices[ $price_id ]['shipping'] );
+		return (bool) apply_filters( 'edd_simple_shipping_price_hasa_shipping', $ret, $item_id, $price_id );
 	}
 
 
@@ -313,7 +333,8 @@ class EDD_Simple_Shipping {
 		$ret = false;
 		if( is_array( $cart_contents ) ) {
 			foreach( $cart_contents as $item ) {
-				if( $this->item_has_shipping( $item['id'] ) ) {
+				$price_id = isset( $item['options']['price_id'] ) ? (int) $item['options']['price_id'] : null;
+				if( $this->item_has_shipping( $item['id'], $price_id ) ) {
 					$ret = true;
 					break;
 				}
@@ -363,7 +384,10 @@ class EDD_Simple_Shipping {
 		$amount = 0.00;
 
 		foreach( $cart_contents as $item ) {
-			if( $this->item_has_shipping( $item['id'] ) ) {
+
+			$price_id = isset( $item['options']['price_id'] ) ? (int) $item['options']['price_id'] : null;
+
+			if( $this->item_has_shipping( $item['id'], $price_id ) ) {
 
 				if( $this->is_domestic ) {
 
