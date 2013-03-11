@@ -534,10 +534,8 @@ class EDD_Simple_Shipping {
 			$('body').change('select[name=shipping_country],select[name=billing_country]',function(){
 				if( $('select[name=billing_country]').length && ! $('#edd_simple_shipping_show').is(':checked') ) {
 					var val = $('select[name=billing_country]').val();
-					alert('1');
 				} else {
 					var val = $('select[name=shipping_country]').val();
-					alert('2');
 				}
 				if( val =='US') {
 					$('#shipping_state_other').hide();$('#shipping_state_us').show();$('#shipping_state_ca').hide();
