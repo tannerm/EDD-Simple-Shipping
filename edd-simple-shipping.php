@@ -13,6 +13,14 @@ class EDD_Simple_Shipping {
 
 	private static $instance;
 
+
+	/**
+	 * Flag for domestic / international shipping
+	 *
+	 * @since 1.0
+	 *
+	 * @access private
+	 */
 	private $is_domestic = true;
 
 	/**
