@@ -532,7 +532,13 @@ class EDD_Simple_Shipping {
 ?>
 		<script type="text/javascript">var edd_global_vars; jQuery(document).ready(function($){
 			$('body').change('select[name=shipping_country],select[name=billing_country]',function(){
-				var val = $('option:selected', this).val();
+				if( $('select[name=billing_country]').length && ! $('#edd_simple_shipping_show').is(':checked') ) {
+					var val = $('select[name=billing_country]').val();
+					alert('1');
+				} else {
+					var val = $('select[name=shipping_country]').val();
+					alert('2');
+				}
 				if( val =='US') {
 					$('#shipping_state_other').hide();$('#shipping_state_us').show();$('#shipping_state_ca').hide();
 				} else if(  val =='CA'){
@@ -587,7 +593,6 @@ class EDD_Simple_Shipping {
 				$('#edd_simple_shipping_fields_wrap').toggle();
 			});
 		});</script>
-
 
 		<div id="edd_simple_shipping">
 			<?php if( $this->has_billing_fields() ) : ?>
