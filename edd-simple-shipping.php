@@ -531,17 +531,40 @@ class EDD_Simple_Shipping {
 		ob_start();
 ?>
 		<script type="text/javascript">var edd_global_vars; jQuery(document).ready(function($){
-			$('body').change('select[name=shipping_country]',function(){
-				if($('select[name=shipping_country]').val()=='US')
-					{$('#shipping_state_other').hide();$('#shipping_state_us').show();$('#shipping_state_ca').hide();
-				} else if( $('select[name=shipping_country]').val()=='CA'){
+			$('body').change('select[name=shipping_country],select[name=billing_country]',function(){
+				var val = $('option:selected', this).val();
+				if( val =='US') {
+					$('#shipping_state_other').hide();$('#shipping_state_us').show();$('#shipping_state_ca').hide();
+				} else if(  val =='CA'){
 					$('#shipping_state_other').hide();$('#shipping_state_us').hide();$('#shipping_state_ca').show();
 				} else {
 					$('#shipping_state_other').show();$('#shipping_state_us').hide();$('#shipping_state_ca').hide();
 				}
 				var postData = {
 		            action: 'edd_get_shipping_rate',
-		            country: $('select[name=shipping_country]').val()
+		            country:  val
+		        };
+		        $.ajax({
+		            type: "POST",
+		            data: postData,
+		            dataType: "json",
+		            url: edd_global_vars.ajaxurl,
+		            success: function (response) {
+		                if( response ) {
+		                	$('.edd_cart_amount').text( response.total );
+		                	$('#edd_cart_fee_simple_shipping .edd_cart_fee_amount').text( response.shipping_amount );
+		                } else {
+		                    console.log( response );
+		                }
+		            }
+		        }).fail(function (data) {
+		            console.log(data);
+		        });
+			});
+			$('select#edd-gateway, input.edd-gateway').change( function (e) {
+				var postData = {
+		            action: 'edd_get_shipping_rate',
+		            country: 'US' // default
 		        };
 		        $.ajax({
 		            type: "POST",
