@@ -116,6 +116,9 @@ class EDD_Simple_Shipping {
 		// Store shipping info
 		add_action( 'edd_purchase_data_before_gateway', array( $this, 'set_shipping_info' ), 10, 2 );
 
+		// Send shipping info to PayPal
+		add_filter( 'edd_paypal_redirect_args', array( $this, 'send_shipping_to_paypal' ), 10, 2 );
+
 		// Display the user's shipping info in the View Details popup
 		add_action( 'edd_payment_personal_details_list', array( $this, 'show_shipping_details' ), 10, 2 );
 
@@ -772,6 +775,35 @@ class EDD_Simple_Shipping {
 		$purchase_data['user_info']['shipping_info'] = $shipping_info;
 
 		return $purchase_data;
+
+	}
+
+
+	/**
+	 * Sets up the shipping details for PayPal
+	 *
+	 * This makes it possible to use the Print Shipping Label feature in PayPal
+	 *
+	 * @since 1.1
+	 *
+	 * @access public
+	 * @return array
+	 */
+	public function send_shipping_to_paypal( $paypal_args = array(), $purchase_data = array() ) {
+
+		if( ! $this->cart_needs_shipping() )
+			return $paypal_args;
+
+		$shipping_info = $purchase_data['user_info']['shipping_info'];
+
+		$paypal_args['address1'] = $shipping_info['address'];
+		$paypal_args['address2'] = $shipping_info['address2'];
+		$paypal_args['city']     = $shipping_info['city'];
+		$paypal_args['state']    = $paypal_args['country'] == 'US' ? $shipping_info['state'] : null;
+		$paypal_args['country']  = $shipping_info['country'];
+		$paypal_args['zip']      = $shipping_info['zip'];
+
+		return $paypal_args;
 
 	}
 
