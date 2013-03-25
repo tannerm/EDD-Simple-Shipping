@@ -143,6 +143,9 @@ class EDD_Simple_Shipping {
 		// Update shipped status when a purchase is edited
 		add_action( 'edd_update_edited_purchase', array( $this, 'update_edited_purchase' ) );
 
+		// Modify the admin sales notice
+		add_filter( 'edd_admin_purchase_notification', array( $this, 'admin_sales_notice' ), 10, 3 );
+
 		// auto updater
 
 		// retrieve our license key from the DB
@@ -796,12 +799,13 @@ class EDD_Simple_Shipping {
 
 		$shipping_info = $purchase_data['user_info']['shipping_info'];
 
-		$paypal_args['address1'] = $shipping_info['address'];
-		$paypal_args['address2'] = $shipping_info['address2'];
-		$paypal_args['city']     = $shipping_info['city'];
-		$paypal_args['state']    = $paypal_args['country'] == 'US' ? $shipping_info['state'] : null;
-		$paypal_args['country']  = $shipping_info['country'];
-		$paypal_args['zip']      = $shipping_info['zip'];
+		$paypal_args['no_shipping'] = '0';
+		$paypal_args['address1']    = $shipping_info['address'];
+		$paypal_args['address2']    = $shipping_info['address2'];
+		$paypal_args['city']        = $shipping_info['city'];
+		$paypal_args['state']       = $shipping_info['country'] == 'US' ? $shipping_info['state'] : null;
+		$paypal_args['country']     = $shipping_info['country'];
+		$paypal_args['zip']         = $shipping_info['zip'];
 
 		return $paypal_args;
 
@@ -981,6 +985,37 @@ class EDD_Simple_Shipping {
 
 		if( isset( $_POST['edd-payment-shipped'] ) )
 			update_post_meta( $payment_id, '_edd_payment_shipping_status', '2' );
+
+	}
+
+
+	/**
+	 * Add the shipping info to the admin sales notice
+	 *
+	 * @access      public
+	 * @since       1.1
+	 * @return      string
+	 */
+	public function admin_sales_notice( $email = '', $payment_id = 0, $payment_data = array() ) {
+
+		$shipped = get_post_meta( $payment_id, '_edd_payment_shipping_status', true );
+
+		// Only modify the email if shipping info needs to be added
+		if( '1' == $shipped ) {
+
+			$user_info     = maybe_unserialize( $payment_data['user_info'] );
+			$shipping_info = $user_info['shipping_info'];
+
+			$email .= "\n\n" . __( 'Shipping Details:', 'edd-simple-shipping' ) . "\n";
+			$email .= __( 'Address:', 'edd-simple-shipping' ) . " " . $shipping_info['address'] . "\n";
+			$email .= __( 'Address Line 2:', 'edd-simple-shipping' ) . " " . $shipping_info['address2'] . "\n";
+			$email .= __( 'City:', 'edd-simple-shipping' ) . " " . $shipping_info['city'] . "\n";
+			$email .= __( 'Zip/Postal Code:', 'edd-simple-shipping' ) . " " . $shipping_info['zip'] . "\n";
+			$email .= __( 'Country:', 'edd-simple-shipping' ) . " " . $shipping_info['country'] . "\n";
+
+		}
+
+		return $email;
 
 	}
 
