@@ -146,6 +146,11 @@ class EDD_Simple_Shipping {
 		// Modify the admin sales notice
 		add_filter( 'edd_admin_purchase_notification', array( $this, 'admin_sales_notice' ), 10, 3 );
 
+		// Add a new box to the export screen
+		add_action( 'edd_reports_tab_export_content_bottom', array( $this, 'show_export_options' ) );
+
+		add_action( 'edd_unshipped_orders_export', array( $this, 'do_export' ) );
+
 		// auto updater
 
 		// retrieve our license key from the DB
@@ -1019,6 +1024,41 @@ class EDD_Simple_Shipping {
 
 	}
 
+
+	/**
+	 * Add the export unshipped orders box to the export screen
+	 *
+	 * @access      public
+	 * @since       1.2
+	 * @return      void
+	 */
+	public function show_export_options() {
+?>
+		<div class="postbox">
+			<h3><span><?php _e( 'Export Unshipped Orders to CSV', 'edd-simple-shipping' ); ?></span></h3>
+			<div class="inside">
+				<p><?php _e( 'Download a CSV of all unshipped orders.', 'edd-simple-shipping' ); ?></p>
+				<p><a class="button" href="<?php echo wp_nonce_url( add_query_arg( array( 'edd-action' => 'unshipped_orders_export' ) ), 'edd_export_unshipped_orders' ); ?>"><?php _e( 'Generate CSV', 'edd-simple-shipping' ) ; ?></a></p>
+			</div><!-- .inside -->
+		</div><!-- .postbox -->
+<?php
+	}
+
+
+	/**
+	 * Trigger the CSV export
+	 *
+	 * @access      public
+	 * @since       1.2
+	 * @return      void
+	 */
+	public function do_export() {
+		require_once dirname( __FILE__ ) . '/class-shipping-export.php';
+
+		$export = new EDD_Simple_Shipping_Export();
+
+		$export->export();
+	}
 
 	/**
 	 * Add our extension settings
