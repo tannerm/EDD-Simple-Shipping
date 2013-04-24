@@ -518,8 +518,10 @@ class EDD_Simple_Shipping {
 	 */
 	private function has_billing_fields() {
 
+		$did_action = did_action( 'edd_after_cc_fields', 'edd_default_cc_address_fields' );
+
 		// Have to assume all gateways are using the default CC fields (they should be)
-		return did_action( 'edd_after_cc_fields', 'edd_default_cc_address_fields' );
+		return ( $did_action || isset( $_POST['card_address'] ) );
 
 	}
 
@@ -706,13 +708,13 @@ class EDD_Simple_Shipping {
 		} else {
 
 			// Shipping address is the same as billing
-			if( empty( $post_data['billing_address'] ) )
+			if( empty( $post_data['card_address'] ) )
 				edd_set_error( 'missing_address', __( 'Please enter a shipping address', 'edd-simple-shipping' ) );
 
-			if( empty( $post_data['billing_city'] ) )
+			if( empty( $post_data['card_city'] ) )
 				edd_set_error( 'missing_city', __( 'Please enter a city for shipping', 'edd-simple-shipping' ) );
 
-			if( empty( $post_data['billing_zip'] ) )
+			if( empty( $post_data['card_zip'] ) )
 				edd_set_error( 'missing_zip', __( 'Please enter a zip/postal code for shipping', 'edd-simple-shipping' ) );
 
 		}
