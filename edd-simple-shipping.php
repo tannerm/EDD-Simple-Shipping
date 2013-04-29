@@ -761,22 +761,22 @@ class EDD_Simple_Shipping {
 
 		} else {
 
-			$shipping_info['address']  = sanitize_text_field( $_POST['billing_address'] );
-			$shipping_info['address2'] = sanitize_text_field( $_POST['billing_address_2'] );
-			$shipping_info['city']     = sanitize_text_field( $_POST['billing_city'] );
+			$shipping_info['address']  = sanitize_text_field( $_POST['card_address'] );
+			$shipping_info['address2'] = sanitize_text_field( $_POST['card_address_2'] );
+			$shipping_info['city']     = sanitize_text_field( $_POST['card_city'] );
 			$shipping_info['zip']      = sanitize_text_field( $_POST['billing_zip'] );
 			$shipping_info['country']  = sanitize_text_field( $_POST['billing_country'] );
 
 			// Shipping address is different
 			switch ( $_POST['billing_country'] ) :
 				case 'US' :
-					$shipping_info['state'] = isset( $_POST['billing_state_us'] )	 ? sanitize_text_field( $_POST['billing_state_us'] ) 	: '';
+					$shipping_info['state'] = isset( $_POST['card_state_us'] )	 ? sanitize_text_field( $_POST['card_state_us'] ) 	: '';
 					break;
 				case 'CA' :
-					$shipping_info['state'] = isset( $_POST['billing_state_ca'] )	 ? sanitize_text_field( $_POST['billing_state_ca'] ) 	: '';
+					$shipping_info['state'] = isset( $_POST['card_state_ca'] )	 ? sanitize_text_field( $_POST['card_state_ca'] ) 	: '';
 					break;
 				default :
-					$shipping_info['state'] = isset( $_POST['billing_state_other'] ) ? sanitize_text_field( $_POST['billing_state_other'] )  : '';
+					$shipping_info['state'] = isset( $_POST['card_state_other'] ) ? sanitize_text_field( $_POST['card_state_other'] )  : '';
 					break;
 			endswitch;
 
