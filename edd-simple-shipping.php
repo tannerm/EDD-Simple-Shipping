@@ -764,7 +764,7 @@ class EDD_Simple_Shipping {
 			$shipping_info['address']  = sanitize_text_field( $_POST['card_address'] );
 			$shipping_info['address2'] = sanitize_text_field( $_POST['card_address_2'] );
 			$shipping_info['city']     = sanitize_text_field( $_POST['card_city'] );
-			$shipping_info['zip']      = sanitize_text_field( $_POST['billing_zip'] );
+			$shipping_info['zip']      = sanitize_text_field( $_POST['card_zip'] );
 			$shipping_info['country']  = sanitize_text_field( $_POST['billing_country'] );
 
 			// Shipping address is different
