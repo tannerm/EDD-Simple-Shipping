@@ -3,7 +3,7 @@
 Plugin Name: Easy Digital Downloads - Simple Shipping
 Plugin URI: http://easydigitaldownloads.com/extension/simple-shipping
 Description: Provides the ability to charge simple shipping fees for physical products in EDD
-Version: 1.3.2
+Version: 1.3.3
 Author: Pippin Williamson
 Author URI:  http://pippinsplugins.com
 Contributors: mordauk
@@ -52,7 +52,7 @@ class EDD_Simple_Shipping {
 
 		define( 'EDD_SIMPLE_SHIPPING_STORE_API_URL', 'https://easydigitaldownloads.com' );
 		define( 'EDD_SIMPLE_SHIPPING_PRODUCT_NAME', 'Simple Shipping' );
-		define( 'EDD_SIMPLE_SHIPPING_VERSION', '1.3.2' );
+		define( 'EDD_SIMPLE_SHIPPING_VERSION', '1.3.3' );
 
 		if( !class_exists( 'EDD_SL_Plugin_Updater' ) ) {
 			// load our custom updater
@@ -87,6 +87,7 @@ class EDD_Simple_Shipping {
 
 		// activate license key on settings save
 		add_action( 'admin_init', array( $this, 'activate_license' ) );
+		add_action( 'admin_init', array( $this, 'deactivate_license' ) );
 
 		// Add the meta box fields to Download Configuration
 		add_action( 'edd_meta_box_fields', array( $this, 'metabox' ), 10 );
@@ -1143,6 +1144,57 @@ class EDD_Simple_Shipping {
 
 	}
 
+
+	/**
+	 * Deactivate a license key
+	 *
+	 * @since  1.3.3
+	 * @return void
+	 */
+
+	public function deactivate_license() {
+		global $edd_options;
+
+		if ( ! isset( $_POST['edd_settings_general'] ) )
+			return;
+
+		if ( ! isset( $_POST['edd_settings_general']['edd_simple_shipping_license_key'] ) )
+			return;
+
+		// listen for our activate button to be clicked
+		if( isset( $_POST['edd_simple_shipping_license_key_deactivate'] ) ) {
+
+		    // run a quick security check
+		    if( ! check_admin_referer( 'edd_simple_shipping_license_key_nonce', 'edd_simple_shipping_license_key_nonce' ) )
+		      return; // get out if we didn't click the Activate button
+
+		    // retrieve the license from the database
+		    $license = trim( $edd_options['edd_simple_shipping_license_key'] );
+
+		    // data to send in our API request
+		    $api_params = array(
+		      'edd_action'=> 'deactivate_license',
+		      'license'   => $license,
+		      'item_name' => urlencode( EDD_SIMPLE_SHIPPING_PRODUCT_NAME ) // the name of our product in EDD
+		    );
+
+		    // Call the custom API.
+		    $response = wp_remote_get( add_query_arg( $api_params, EDD_SIMPLE_SHIPPING_STORE_API_URL ), array( 'timeout' => 15, 'sslverify' => false ) );
+
+		    // make sure the response came back okay
+		    if ( is_wp_error( $response ) )
+		    	return false;
+
+		    // decode the license data
+		    $license_data = json_decode( wp_remote_retrieve_body( $response ) );
+
+		    // $license_data->license will be either "deactivated" or "failed"
+		    if( $license_data->license == 'deactivated' )
+		    	delete_option( 'edd_simple_shipping_license_active' );
+
+		}
+	}
+
 }
 
 
@@ -1159,3 +1211,31 @@ function edd_simple_shipping_load() {
 	$edd_simple_shipping = new EDD_Simple_Shipping();
 }
 add_action( 'plugins_loaded', 'edd_simple_shipping_load' );
+
+
+
+/**
+ * Registers the new license field type
+ *
+ * @access      private
+ * @since       1.3.2
+ * @return      void
+*/
+
+if( ! function_exists( 'edd_license_key_callback' ) ) {
+	function edd_license_key_callback( $args ) {
+		global $edd_options;
+
+		if( isset( $edd_options[ $args['id'] ] ) ) { $value = $edd_options[ $args['id'] ]; } else { $value = isset( $args['std'] ) ? $args['std'] : ''; }
+		$size = isset( $args['size'] ) && !is_null($args['size']) ? $args['size'] : 'regular';
+		$html = '<input type="text" class="' . $args['size'] . '-text" id="edd_settings_' . $args['section'] . '[' . $args['id'] . ']" name="edd_settings_' . $args['section'] . '[' . $args['id'] . ']" value="' . esc_attr( $value ) . '"/>';
+
+		if( 'valid' == get_option( $args['options']['is_valid_license_option'] ) ) {
+			$html .= wp_nonce_field( $args['id'] . '_nonce', $args['id'] . '_nonce', false );
+			$html .= '<input type="submit" class="button-secondary" name="' . $args['id'] . '_deactivate" value="' . __( 'Deactivate License',  'edd-recurring' ) . '"/>';
+		}
+		$html .= '<label for="edd_settings_' . $args['section'] . '[' . $args['id'] . ']"> '  . $args['desc'] . '</label>';
+
+		echo $html;
+	}
+}
