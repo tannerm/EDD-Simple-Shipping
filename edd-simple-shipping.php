@@ -115,7 +115,7 @@ class EDD_Simple_Shipping {
 		add_action( 'edd_checkout_error_checks', array( $this, 'error_checks' ), 10, 2 );
 
 		// Store shipping info
-		add_action( 'edd_purchase_data_before_gateway', array( $this, 'set_shipping_info' ), 10, 2 );
+		add_filter( 'edd_purchase_data_before_gateway', array( $this, 'set_shipping_info' ), 10, 2 );
 
 		// Send shipping info to PayPal
 		add_filter( 'edd_paypal_redirect_args', array( $this, 'send_shipping_to_paypal' ), 10, 2 );
@@ -394,12 +394,12 @@ class EDD_Simple_Shipping {
 	public function calc_total_shipping() {
 
 		if( ! $this->cart_needs_shipping() )
-			return 0.00;
+			return false;
 
 		$cart_contents = edd_get_cart_contents();
 
 		if( ! is_array( $cart_contents ) )
-			return 0.00;
+			return false;
 
 		$amount = 0.00;
 
@@ -487,7 +487,10 @@ class EDD_Simple_Shipping {
 
 		$amount = $this->calc_total_shipping();
 
-		EDD()->fees->add_fee( $amount, __( 'Shipping Costs', 'edd-simple-shipping' ), 'simple_shipping' );
+		if( $amount )
+			EDD()->fees->add_fee( $amount, __( 'Shipping Costs', 'edd-simple-shipping' ), 'simple_shipping' );
+		else
+			EDD()->fees->remove_fee( 'simple_shipping' );
 
 	}
 
@@ -1214,7 +1217,6 @@ function edd_simple_shipping_load() {
 	$edd_simple_shipping = new EDD_Simple_Shipping();
 }
 add_action( 'plugins_loaded', 'edd_simple_shipping_load' );
-
 
 
 /**
