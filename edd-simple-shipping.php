@@ -109,7 +109,7 @@ class EDD_Simple_Shipping {
 		add_action( 'init', array( $this, 'apply_shipping_fees' ) );
 
 		// Display the shipping address fields
-		add_action( 'edd_purchase_form_after_cc_form', array( $this, 'address_fields' ), 0 );
+		add_action( 'edd_purchase_form_after_cc_form', array( $this, 'address_fields' ), 999 );
 
 		// Check for errors on checkout submission
 		add_action( 'edd_checkout_error_checks', array( $this, 'error_checks' ), 10, 2 );
@@ -520,6 +520,8 @@ class EDD_Simple_Shipping {
 	private function has_billing_fields() {
 
 		$did_action = did_action( 'edd_after_cc_fields', 'edd_default_cc_address_fields' );
+		if( ! $did_action )
+			$did_action = did_action( 'edd_purchase_form_after_cc_form', 'edd_checkout_tax_fields' );
 
 		// Have to assume all gateways are using the default CC fields (they should be)
 		return ( $did_action || isset( $_POST['card_address'] ) );
@@ -814,6 +816,7 @@ class EDD_Simple_Shipping {
 		$paypal_args['state']       = $shipping_info['country'] == 'US' ? $shipping_info['state'] : null;
 		$paypal_args['country']     = $shipping_info['country'];
 		$paypal_args['zip']         = $shipping_info['zip'];
+
 
 		return $paypal_args;
 
