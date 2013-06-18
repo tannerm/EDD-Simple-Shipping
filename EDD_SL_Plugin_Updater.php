@@ -116,7 +116,11 @@ class EDD_SL_Plugin_Updater {
 		global $wp_version;
 
 		$data = array_merge( $this->api_data, $_data );
+
 		if( $data['slug'] != $this->slug )
+			return;
+
+		if( empty( $data['license'] ) )
 			return;
 
 		$api_params = array(
