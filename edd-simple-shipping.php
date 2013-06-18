@@ -867,11 +867,13 @@ class EDD_Simple_Shipping {
 		$countries = edd_get_country_list();
 
 		echo '<li><strong>' . __( 'Shipping Info', 'edd-simple-shipping' ) . '</strong></li>';
-		echo '<li>' . $shipping_info['address'] . '</li>';
+		echo '<li>' . __( 'Address: ', 'edd-simple-shipping' ) . $shipping_info['address'] . '</li>';
 		if( ! empty( $shipping_info['address2'] ) )
-			echo '<li>' . $shipping_info['address2'] . '</li>';
-		echo '<li>' . $shipping_info['city'] . ', ' . $shipping_info['state'] . ' ' . $shipping_info['zip'] . '</li>';
-		echo '<li>' . $countries[ $shipping_info['country'] ] . '</li>';
+			echo '<li>' . __( 'Address Line 2:', 'edd-simple-shipping' ) . $shipping_info['address2'] . '</li>';
+		echo '<li>' . __( 'City: ', 'edd-simple-shipping' ) . $shipping_info['city'] . '</li>';
+		echo '<li>' . __( 'State/Province: ', 'edd-simple-shipping' ) .  $shipping_info['state'] . '</li>';
+		echo '<li>' . __( 'Zip/Postal Code: ', 'edd-simple-shipping' ) . $shipping_info['zip'] . '</li>';
+		echo '<li>' . __( 'Country: ', 'edd-simple-shipping' ) . $countries[ $shipping_info['country'] ] . '</li>';
 
 	}
 
