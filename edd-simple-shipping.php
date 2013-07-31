@@ -613,10 +613,12 @@ class EDD_Simple_Shipping {
 
 		<div id="edd_simple_shipping">
 			<?php if( $this->has_billing_fields() ) : ?>
-			<label for="edd_simple_shipping_show">
-				<input type="checkbox" id="edd_simple_shipping_show" name="edd_use_different_shipping" value="1"/>
-				<?php _e( 'Ship to Different Address?', 'edd-simple-shipping' ); ?>
-			</label>
+				<fieldset id="edd_simple_shipping_diff_address">
+					<label for="edd_simple_shipping_show">
+						<input type="checkbox" id="edd_simple_shipping_show" name="edd_use_different_shipping" value="1"/>
+						<?php _e( 'Ship to Different Address?', 'edd-simple-shipping' ); ?>
+					</label>
+				</fieldset>
 			<?php endif; ?>
 			<div id="edd_simple_shipping_fields_wrap"<?php echo $display; ?>>
 				<fieldset id="edd_simple_shipping_fields">
