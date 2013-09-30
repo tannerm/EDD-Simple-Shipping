@@ -385,7 +385,7 @@ class EDD_Simple_Shipping {
 		if( ! is_array( $cart_contents ) )
 			return false;
 
-		if( is_user_logged_in() ) {
+		if( is_user_logged_in() && empty( $_POST['country'] ) ) {
 			$address = get_user_meta( get_current_user_id(), '_edd_user_address', true );
 			if( isset( $address['country'] ) && $address['country'] != $this->get_base_region() ) {
 				$this->is_domestic = false;
@@ -575,7 +575,6 @@ class EDD_Simple_Shipping {
 		                if( response ) {
 		                	$('.edd_cart_amount').text( response.total );
 		                	$('#edd_cart_fee_simple_shipping .edd_cart_fee_amount').text( response.shipping_amount );
-		                    console.log( response );
 		                } else {
 		                    console.log( response );
 		                }
@@ -587,7 +586,7 @@ class EDD_Simple_Shipping {
 
 			$('body').on('edd_taxes_recalculated', function( event, data ) {
 
-				if(  $('#edd_simple_shipping_show').is(':checked') )
+				if( $('#edd_simple_shipping_show').is(':checked') )
 					return;
 
 				var postData = {
@@ -603,7 +602,6 @@ class EDD_Simple_Shipping {
 		                if( response ) {
 		                	$('.edd_cart_amount').text( response.total );
 		                	$('#edd_cart_fee_simple_shipping .edd_cart_fee_amount').text( response.shipping_amount );
-		                    console.log( response );
 		                } else {
 		                    console.log( response );
 		                }
