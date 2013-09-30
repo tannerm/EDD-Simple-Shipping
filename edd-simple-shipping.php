@@ -385,6 +385,13 @@ class EDD_Simple_Shipping {
 		if( ! is_array( $cart_contents ) )
 			return false;
 
+		if( is_user_logged_in() ) {
+			$address = get_user_meta( get_current_user_id(), '_edd_user_address', true );
+			if( isset( $address['country'] ) && $address['country'] != $this->get_base_region() ) {
+				$this->is_domestic = false;
+			}
+		}
+
 		$amount = 0.00;
 
 		foreach( $cart_contents as $item ) {
