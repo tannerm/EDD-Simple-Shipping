@@ -134,7 +134,7 @@ class EDD_Simple_Shipping {
 		add_action( 'edd_update_edited_purchase', array( $this, 'update_edited_purchase' ) );
 
 		// Modify the admin sales notice
-		add_filter( 'edd_admin_purchase_notification', array( $this, 'admin_sales_notice' ), 10, 3 );
+		add_filter( 'edd_sale_notification', array( $this, 'admin_sales_notice' ), 10, 3 );
 
 		// Add a new box to the export screen
 		add_action( 'edd_reports_tab_export_content_bottom', array( $this, 'show_export_options' ) );
