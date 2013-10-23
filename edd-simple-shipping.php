@@ -1040,12 +1040,12 @@ class EDD_Simple_Shipping {
 			$user_info     = maybe_unserialize( $payment_data['user_info'] );
 			$shipping_info = $user_info['shipping_info'];
 
-			$email .= "\n\n" . __( 'Shipping Details:', 'edd-simple-shipping' ) . "\n";
-			$email .= __( 'Address:', 'edd-simple-shipping' ) . " " . $shipping_info['address'] . "\n";
-			$email .= __( 'Address Line 2:', 'edd-simple-shipping' ) . " " . $shipping_info['address2'] . "\n";
-			$email .= __( 'City:', 'edd-simple-shipping' ) . " " . $shipping_info['city'] . "\n";
-			$email .= __( 'Zip/Postal Code:', 'edd-simple-shipping' ) . " " . $shipping_info['zip'] . "\n";
-			$email .= __( 'Country:', 'edd-simple-shipping' ) . " " . $shipping_info['country'] . "\n";
+			$email .= "<p><strong>" . __( 'Shipping Details:', 'edd-simple-shipping' ) . "</strong></p>";
+			$email .= __( 'Address:', 'edd-simple-shipping' ) . " " . $shipping_info['address'] . "<br/>";
+			$email .= __( 'Address Line 2:', 'edd-simple-shipping' ) . " " . $shipping_info['address2'] . "<br/>";
+			$email .= __( 'City:', 'edd-simple-shipping' ) . " " . $shipping_info['city'] . "<br/>";
+			$email .= __( 'Zip/Postal Code:', 'edd-simple-shipping' ) . " " . $shipping_info['zip'] . "<br/>";
+			$email .= __( 'Country:', 'edd-simple-shipping' ) . " " . $shipping_info['country'] . "<br/>";
 
 		}
 
