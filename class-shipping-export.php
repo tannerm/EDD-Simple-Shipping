@@ -79,21 +79,14 @@ class EDD_Simple_Shipping_Export extends EDD_Export {
 		if ( $payments ) {
 			foreach ( $payments as $payment ) {
 				$user_info = edd_get_payment_meta_user_info( $payment );
-				$downloads      = edd_get_payment_meta_cart_details( $payment );
-				$products       = '';
+				$downloads = edd_get_payment_meta_cart_details( $payment );
+				$products  = '';
 
 				if ( $downloads ) {
 					foreach ( $downloads as $key => $download ) {
-						// Download ID
-						$id = isset( $payment_meta['cart_details'] ) ? $download['id'] : $download;
-
-						// If the download has variable prices, override the default price
-						$price_override = isset( $payment_meta['cart_details'] ) ? $download['price'] : null;
-
-						$price = edd_get_download_final_price( $id, $user_info, $price_override );
 
 						// Display the Downoad Name
-						$products .= get_the_title( $id );
+						$products .= get_the_title( $download['id'] );
 
 						if ( $key != ( count( $downloads ) -1 ) ) {
 							$products .= ' / ';
