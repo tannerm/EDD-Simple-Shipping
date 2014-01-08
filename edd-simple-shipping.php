@@ -144,10 +144,9 @@ class EDD_Simple_Shipping {
 		// auto updater
 		if( is_admin() ) {
 
-			if( ! class_exists( 'EDD_License' ) ) {
-				include( dirname( __FILE__ ) . '/EDD_License_Handler.php' );
+			if( class_exists( 'EDD_License' ) ) {
+				$license = new EDD_License( __FILE__, 'Simple Shipping', EDD_SIMPLE_SHIPPING_VERSION, 'Pippin Williamson', 'edd_simple_shipping_license_key' );
 			}
-			$license = new EDD_License( __FILE__, 'Simple Shipping', EDD_SIMPLE_SHIPPING_VERSION, 'Pippin Williamson', 'edd_simple_shipping_license_key' );
 		}
 	}
 
