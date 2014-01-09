@@ -90,6 +90,9 @@ class EDD_Simple_Shipping {
 		// Add our meta fields to the EDD save routine
 		add_filter( 'edd_metabox_fields_save', array( $this, 'meta_fields_save' ) );
 
+		// Save shipping details on edit
+		add_action( 'edd_updated_edited_purchase', array( $this, 'save_payment' ) );
+
 		// Check shipping rate when billing/shipping fields are changed
 		add_action( 'wp_ajax_edd_get_shipping_rate', array( $this, 'ajax_shipping_rate' ) );
 		add_action( 'wp_ajax_nopriv_edd_get_shipping_rate', array( $this, 'ajax_shipping_rate' ) );
@@ -110,7 +113,7 @@ class EDD_Simple_Shipping {
 		add_filter( 'edd_paypal_redirect_args', array( $this, 'send_shipping_to_paypal' ), 10, 2 );
 
 		// Display the user's shipping info in the View Details popup
-		add_action( 'edd_payment_personal_details_list', array( $this, 'show_shipping_details' ), 10, 2 );
+		add_action( 'edd_view_order_details_main_before', array( $this, 'show_shipping_details' ), 10, 2 );
 
 		// Set payment as not shipped
 		add_action( 'edd_insert_payment', array( $this, 'set_as_not_shipped' ), 10, 2 );
@@ -287,6 +290,28 @@ class EDD_Simple_Shipping {
 
 	}
 
+	/**
+	 * Save the shipping details on payment edit
+	 *
+	 * @since 1.5
+	 *
+	 * @access private
+	 * @return void
+	 */
+	public function save_payment( $payment_id = 0 ) {
+
+		$address = isset( $_POST['edd-payment-shipping-address'] ) ? $_POST['edd-payment-shipping-address'] : false;
+		if( ! $address )
+			return;
+
+		$meta      = edd_get_payment_meta( $payment_id );
+		$user_info = maybe_unserialize( $meta['user_info'] );
+
+		$user_info['shipping_info'] = $address[0];
+
+		$meta['user_info'] = $user_info;
+		update_post_meta( $payment_id, '_edd_payment_meta', $meta );
+	}
 
 	/**
 	 * Determine if a product has snipping enabled
@@ -874,24 +899,92 @@ class EDD_Simple_Shipping {
 	 * @access public
 	 * @return void
 	 */
-	public function show_shipping_details( $payment_meta = array(), $user_info = array() ) {
+	public function show_shipping_details( $payment_id = 0 ) {
 
-		$shipping_info = ! empty( $user_info['shipping_info'] ) ? $user_info['shipping_info'] : false;
+		if( empty( $payment_id ) ) {
+			$payment_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
+		}
 
-		if( ! $shipping_info )
+		$user_info     = edd_get_payment_meta_user_info( $payment_id );
+
+		$address = ! empty( $user_info['shipping_info'] ) ? $user_info['shipping_info'] : false;
+
+		if( ! $address )
 			return;
+?>
+		<div id="edd-shipping-details" class="postbox">
+			<h3 class="hndle">
+				<span><?php _e( 'Shipping Address', 'edd' ); ?></span>
+			</h3>
+			<div class="inside edd-clearfix">
 
-		$countries = edd_get_country_list();
+				<div id="edd-order-address">
 
-		echo '<li><strong>' . __( 'Shipping Info', 'edd-simple-shipping' ) . '</strong></li>';
-		echo '<li><strong>&nbsp;&nbsp;' . __( 'Address: ', 'edd-simple-shipping' ) . '</strong>' . $shipping_info['address'] . '</li>';
-		if( ! empty( $shipping_info['address2'] ) )
-			echo '<li><strong>&nbsp;&nbsp;' . __( 'Address Line 2: ', 'edd-simple-shipping' ) . '</strong>' .  $shipping_info['address2'] . '</li>';
-		echo '<li><strong>&nbsp;&nbsp;' . __( 'City: ', 'edd-simple-shipping' ) . '</strong>' .  $shipping_info['city'] . '</li>';
-		echo '<li><strong>&nbsp;&nbsp;' . __( 'State/Province: ', 'edd-simple-shipping' ) . '</strong>' .   $shipping_info['state'] . '</li>';
-		echo '<li><strong>&nbsp;&nbsp;' . __( 'Zip/Postal Code: ', 'edd-simple-shipping' ) . '</strong>' .  $shipping_info['zip'] . '</li>';
-		echo '<li><strong>&nbsp;&nbsp;' . __( 'Country: ', 'edd-simple-shipping' ) . '</strong>' .  $countries[ $shipping_info['country'] ] . '</li>';
+					<div class="order-data-address">
+						<div class="data column-container">
+							<div class="column">
+								<p>
+									<strong class="order-data-address-line"><?php _e( 'Street Address Line 1:', 'edd' ); ?></strong><br/>
+									<input type="text" name="edd-payment-shipping-address[0][address]" value="<?php esc_attr_e( $address['address'] ); ?>" class="medium-text" />
+								</p>
+								<p>
+									<strong class="order-data-address-line"><?php _e( 'Street Address Line 2:', 'edd' ); ?></strong><br/>
+									<input type="text" name="edd-payment-shipping-address[0][address2]" value="<?php esc_attr_e( $address['address2'] ); ?>" class="medium-text" />
+								</p>
+									
+							</div>
+							<div class="column">
+								<p>
+									<strong class="order-data-address-line"><?php echo _x( 'City:', 'Address City', 'edd' ); ?></strong><br/>
+									<input type="text" name="edd-payment-shipping-address[0][city]" value="<?php esc_attr_e( $address['city'] ); ?>" class="medium-text"/>
+									
+								</p>
+								<p>
+									<strong class="order-data-address-line"><?php echo _x( 'Zip / Postal Code:', 'Zip / Postal code of address', 'edd' ); ?></strong><br/>
+									<input type="text" name="edd-payment-shipping-address[0][zip]" value="<?php esc_attr_e( $address['zip'] ); ?>" class="medium-text"/>
+									
+								</p>
+							</div>
+							<div class="column">
+								<p id="edd-order-address-country-wrap">
+									<strong class="order-data-address-line"><?php echo _x( 'Country:', 'Address country', 'edd' ); ?></strong><br/>
+									<?php
+									echo EDD()->html->select( array(
+										'options'          => edd_get_country_list(),
+										'name'             => 'edd-payment-shipping-address[0][country]',
+										'selected'         => $address['country'],
+										'show_option_all'  => false,
+										'show_option_none' => false
+									) );
+									?>
+								</p>
+								<p id="edd-order-address-state-wrap">
+									<strong class="order-data-address-line"><?php echo _x( 'State / Province:', 'State / province of address', 'edd' ); ?></strong><br/>
+									<?php
+									$states = edd_get_shop_states( $address['country'] );
+									if( ! empty( $states ) ) {
+										echo EDD()->html->select( array(
+											'options'          => $states,
+											'name'             => 'edd-payment-shipping-address[0][state]',
+											'selected'         => $address['state'],
+											'show_option_all'  => false,
+											'show_option_none' => false
+										) );
+									} else { ?>
+										<input type="text" name="edd-payment-shipping-address[0][state]" value="<?php esc_attr_e( $address['state'] ); ?>" class="medium-text"/>
+										<?php
+									} ?>
+								</p>
+							</div>
+						</div>
+					</div>
+				</div><!-- /#edd-order-address -->
 
+				<?php do_action( 'edd_payment_shipping_details', $payment_id ); ?>
+
+			</div><!-- /.inside -->
+		</div><!-- /#edd-shipping-details -->
+<?php
 	}
 
 
