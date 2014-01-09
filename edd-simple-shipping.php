@@ -133,9 +133,6 @@ class EDD_Simple_Shipping {
 		// Add our Shipped? checkbox to the edit payment screen
 		add_action( 'edd_edit_payment_bottom', array( $this, 'edit_payment_option' ) );
 
-		// Update shipped status when a purchase is edited
-		add_action( 'edd_update_edited_purchase', array( $this, 'update_edited_purchase' ) );
-
 		// Modify the admin sales notice
 		add_filter( 'edd_sale_notification', array( $this, 'admin_sales_notice' ), 10, 3 );
 
@@ -311,6 +308,11 @@ class EDD_Simple_Shipping {
 
 		$meta['user_info'] = $user_info;
 		update_post_meta( $payment_id, '_edd_payment_meta', $meta );
+
+		if( isset( $_POST['edd-payment-shipped'] ) )
+			update_post_meta( $payment_id, '_edd_payment_shipping_status', '2' );
+		else
+			delete_post_meta( $payment_id, '_edd_payment_shipping_status' );
 	}
 
 	/**
@@ -911,6 +913,10 @@ class EDD_Simple_Shipping {
 
 		if( ! $address )
 			return;
+
+		$status  = get_post_meta( $payment_id, '_edd_payment_shipping_status', true );
+
+		$shipped = $status == '2' ? true : false;
 ?>
 		<div id="edd-shipping-details" class="postbox">
 			<h3 class="hndle">
@@ -918,7 +924,7 @@ class EDD_Simple_Shipping {
 			</h3>
 			<div class="inside edd-clearfix">
 
-				<div id="edd-order-address">
+				<div id="edd-order-shipping-address">
 
 					<div class="order-data-address">
 						<div class="data column-container">
@@ -977,6 +983,8 @@ class EDD_Simple_Shipping {
 								</p>
 							</div>
 						</div>
+						<input type="checkbox" name="edd-payment-shipped" value="1"<?php checked( $shipped, true ); ?>/>
+						<span class="description"><?php _e( 'Check if this purchase has been shipped.', 'edd-simple-shipping' ); ?></span>
 					</div>
 				</div><!-- /#edd-order-address -->
 
@@ -1062,56 +1070,6 @@ class EDD_Simple_Shipping {
 			}
 		}
 		return $value;
-	}
-
-
-	/**
-	 * Add a Shipped? checkbox to the edit payment screen
-	 *
-	 * @since 1.0
-	 *
-	 * @access public
-	 * @return void
-	 */
-	public function edit_payment_option( $payment_id = 0 ) {
-
-		$status  = get_post_meta( $payment_id, '_edd_payment_shipping_status', true );
-		if( ! $status )
-			return;
-
-		$shipped = $status == '2' ? true : false;
-?>
-	<tr>
-		<th scope="row" valign="top">
-			<span><?php _e( 'Shipped?', 'edd-simple-shipping' ); ?></span>
-		</th>
-		<td>
-			<input type="checkbox" name="edd-payment-shipped" value="1"<?php checked( $shipped, true ); ?>/>
-			<span class="description"><?php _e( 'Check if this purchase has been shipped.', 'edd-simple-shipping' ); ?></span>
-		</td>
-	</tr>
-<?php
-	}
-
-
-	/**
-	 * Update Edited Purchase
-	 *
-	 * Updates the shipping status of a purchase to indicate it has been shipped
-	 *
-	 * @access      public
-	 * @since       1.0
-	 * @return      void
-	 */
-	public function update_edited_purchase( $payment_id = 0 ) {
-
-		$status  = get_post_meta( $payment_id, '_edd_payment_shipping_status', true );
-		if( ! $status || $status == '2' )
-			return;
-
-		if( isset( $_POST['edd-payment-shipped'] ) )
-			update_post_meta( $payment_id, '_edd_payment_shipping_status', '2' );
-
 	}
 
 
