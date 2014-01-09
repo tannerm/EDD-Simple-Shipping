@@ -141,6 +141,8 @@ class EDD_Simple_Shipping {
 
 		add_action( 'edd_unshipped_orders_export', array( $this, 'do_export' ) );
 
+		add_filter( 'edd_payments_table_bulk_actions', array( $this, 'register_bulk_action' ) );
+		add_action( 'edd_payments_table_do_bulk_action', array( $this, 'process_bulk_actions' ), 10, 2 );
 		// auto updater
 		if( is_admin() ) {
 
@@ -1166,6 +1168,33 @@ class EDD_Simple_Shipping {
 		);
 
 		return array_merge( $settings, $license_settings );
+	}
+
+	/**
+	 * Register the bulk action for marking payments as Shipped
+	 *
+	 * @since 1.5
+	 *
+	 * @access public
+	 * @return array
+	 */
+	public function register_bulk_action( $actions ) {
+		$actions['set-as-shipped'] = __( 'Set as Shipped', 'edd-simple-shipping' );
+		return $actions;
+	}
+
+	/**
+	 * Mark payments as shipped in bulk
+	 *
+	 * @since 1.5
+	 *
+	 * @access public
+	 * @return array
+	 */
+	public function process_bulk_actions( $id, $action ) {
+		if ( 'set-as-shipped' === $action ) {
+			update_post_meta( $id, '_edd_payment_shipping_status', '2' );
+		}
 	}
 
 }
