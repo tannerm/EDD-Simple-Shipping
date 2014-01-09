@@ -1098,6 +1098,7 @@ class EDD_Simple_Shipping {
 			$email .= __( 'City:', 'edd-simple-shipping' ) . " " . $shipping_info['city'] . "<br/>";
 			$email .= __( 'Zip/Postal Code:', 'edd-simple-shipping' ) . " " . $shipping_info['zip'] . "<br/>";
 			$email .= __( 'Country:', 'edd-simple-shipping' ) . " " . $shipping_info['country'] . "<br/>";
+			$email .= __( 'State:', 'edd-simple-shipping' ) . " " . $shipping_info['state'] . "<br/>";
 
 		}
 
