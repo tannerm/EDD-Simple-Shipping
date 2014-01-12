@@ -50,7 +50,7 @@ class EDD_Simple_Shipping {
 	 */
 	public function __construct() {
 
-		define( 'EDD_SIMPLE_SHIPPING_VERSION', '1.4.3' );
+		define( 'EDD_SIMPLE_SHIPPING_VERSION', '1.5' );
 
 		$this->init();
 
