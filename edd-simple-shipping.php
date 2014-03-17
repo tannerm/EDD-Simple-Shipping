@@ -3,7 +3,7 @@
 Plugin Name: Easy Digital Downloads - Simple Shipping
 Plugin URI: http://easydigitaldownloads.com/extension/simple-shipping
 Description: Provides the ability to charge simple shipping fees for physical products in EDD
-Version: 1.5
+Version: 1.5.1
 Author: Pippin Williamson
 Author URI:  http://pippinsplugins.com
 Contributors: mordauk
@@ -50,7 +50,7 @@ class EDD_Simple_Shipping {
 	 */
 	public function __construct() {
 
-		define( 'EDD_SIMPLE_SHIPPING_VERSION', '1.5' );
+		define( 'EDD_SIMPLE_SHIPPING_VERSION', '1.5.1' );
 
 		$this->init();
 
