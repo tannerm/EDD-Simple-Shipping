@@ -82,10 +82,10 @@ class EDD_Simple_Shipping {
 		add_action( 'edd_meta_box_fields', array( $this, 'metabox' ), 10 );
 
 		// Add our variable pricing shipping header
-		add_action( 'edd_download_price_table_head', array( $this, 'price_header' ), 10 );
+		add_action( 'edd_download_price_table_head', array( $this, 'price_header' ), 700 );
 
 		// Add our variable pricing shipping options
-		add_action( 'edd_download_price_table_row', array( $this, 'price_row' ), 20, 3 );
+		add_action( 'edd_download_price_table_row', array( $this, 'price_row' ), 700, 3 );
 
 		// Add our meta fields to the EDD save routine
 		add_filter( 'edd_metabox_fields_save', array( $this, 'meta_fields_save' ) );
