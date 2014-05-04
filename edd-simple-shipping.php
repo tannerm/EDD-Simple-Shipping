@@ -13,7 +13,6 @@ class EDD_Simple_Shipping {
 
 	private static $instance;
 
-
 	/**
 	 * Flag for domestic / international shipping
 	 *
@@ -22,6 +21,15 @@ class EDD_Simple_Shipping {
 	 * @access private
 	 */
 	private $is_domestic = true;
+
+	/**
+	 * Flag for whether Frontend Submissions is enabled
+	 *
+	 * @since 2.0
+	 *
+	 * @access private
+	 */
+	private $is_fes = true;
 
 	/**
 	 * Get active object instance
@@ -74,6 +82,9 @@ class EDD_Simple_Shipping {
 
 		// internationalization
 		add_action( 'init', array( $this, 'textdomain' ) );
+
+		// Check for dependent plugins
+		add_action( 'plugins_loaded', array( $this, 'plugins_check' ) );
 
 		// register our license key settings
 		add_filter( 'edd_settings_general', array( $this, 'settings' ), 1 );
@@ -169,6 +180,22 @@ class EDD_Simple_Shipping {
 
 		// Load the translations
 		load_plugin_textdomain( 'edd-simple-shipping', false, $lang_dir );
+
+	}
+
+	/**
+	 * Determine if dependent plugins are loaded and set flags appropriately
+	 *
+	 * @since 2.0
+	 *
+	 * @access private
+	 * @return void
+	 */
+	public static function plugins_check() {
+
+		if( class_exists( 'EDD_Front_End_Submissions' ) ) {
+			$this->is_fes = true;
+		}
 
 	}
 
