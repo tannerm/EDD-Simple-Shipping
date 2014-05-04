@@ -154,6 +154,20 @@ class EDD_Simple_Shipping {
 
 		add_filter( 'edd_payments_table_bulk_actions', array( $this, 'register_bulk_action' ) );
 		add_action( 'edd_payments_table_do_bulk_action', array( $this, 'process_bulk_actions' ), 10, 2 );
+		
+		if( $this->is_fes ) {
+
+			/**
+			 * Frontend Submissions actions
+			 */
+
+			add_action( 'fes-order-table-column-title', array( $this, 'shipped_column_header' ), 10 );
+			add_action( 'fes-order-table-column-value', array( $this, 'shipped_column_value' ), 10 );
+			add_action( 'edd_payment_receipt_after', array( $this, 'payment_receipt_after' ), 10, 2 );
+			add_action( 'edd_toggle_shipped_status', array( $this, 'frontend_toggle_shipped_status' ) );
+
+		}
+
 		// auto updater
 		if( is_admin() ) {
 
@@ -1224,6 +1238,164 @@ class EDD_Simple_Shipping {
 			update_post_meta( $id, '_edd_payment_shipping_status', '2' );
 		}
 	}
+
+	/**
+	 * Add the shipped status column header
+	 *
+	 * @since 2.0
+	 *
+	 * @param object $order
+	 * @return void
+	 */
+	public function shipped_column_header( $order ) {
+		echo '<th>' . __( 'Shipped', 'edd-simple-shipping' ) . '</th>';
+	}
+
+	/**
+	 * Add the shipped status column header
+	 *
+	 * @since 2.0
+	 *
+	 * @param object $order
+	 * @return void
+	 */
+	public function shipped_column_value( $order ) {
+
+		$shipping_status = get_post_meta( $order->ID, '_edd_payment_shipping_status', true );
+		if( $shipping_status == '1' ) {
+			$value = __( 'No', 'edd-simple-shipping' );
+		} elseif( $shipping_status == '2' ) {
+			$value = __( 'Yes', 'edd-simple-shipping' );
+		} else {
+			$value = __( 'N/A', 'edd-simple-shipping' );
+		}
+
+		$shipped = get_post_meta( $order->ID, '_edd_payment_shipping_status', true );
+		if( $shipped == '2' ) {
+			$new_status = '1';
+		} else {
+			$new_status = '2';
+		}
+
+		$toggle_url = add_query_arg( array(
+			'edd_action' => 'toggle_shipped_status',
+			'order_id'   => $order->ID,
+			'new_status' => $new_status
+		) );
+
+		$toggle_text = $shipped == '2' ? __( 'Mark as not shipped', 'edd-simple-shipping' ) : __( 'Mark as shipped', 'edd-simple-shipping' );
+
+		echo '<td>' . esc_html( $value );
+			if( $shipped ) {
+				echo '<span class="edd-simple-shipping-sep">&nbsp;&ndash;&nbsp;</span><a href="' . esc_attr( $toggle_url ) . '" class="edd-simple-shipping-toggle-status">' . $toggle_text . '</a>';
+			}
+		echo '</td>';
+	}
+
+	/**
+	 * Add the shipping address to the end of the payment receipt.
+	 *
+	 * @since 2.0
+	 *
+	 * @param object $payment
+	 * @param array $edd_receipt_args
+	 * @return void
+	 */
+	public function payment_receipt_after( $payment, $edd_receipt_args ) {
+
+		$user_info = edd_get_payment_meta_user_info( $payment->ID );
+		$address   = ! empty( $user_info[ 'shipping_info' ] ) ? $user_info[ 'shipping_info' ] : false;
+
+		if ( ! $address ) {
+			return;
+		}
+
+		$shipped = get_post_meta( $payment->ID, '_edd_payment_shipping_status', true );
+		if( $shipped == '2' ) {
+			$new_status = '1';
+		} else {
+			$new_status = '2';
+		}
+
+		$toggle_url = add_query_arg( array(
+			'edd_action' => 'toggle_shipped_status',
+			'order_id'   => $payment->ID,
+			'new_status' => $new_status
+		) );
+
+		$toggle_text = $shipped == '2' ? __( 'Mark as not shipped', 'edd-simple-shipping' ) : __( 'Mark as shipped', 'edd-simple-shipping' );
+
+		echo '<tr>';
+		echo '<td><strong>' . __( 'Shipping Address', 'edd-simple-shipping' ) . '</strong></td>';
+		echo '<td>' . self::format_address( $user_info, $address ) . '<td>';
+		echo '</tr>';
+		echo '<tr>';
+			echo '<td colspan="2">';
+				echo '<a href="' . esc_attr( $toggle_url ) . '" class="edd-simple-shipping-toggle-status">' . $toggle_text . '</a>';
+			echo '</td>';
+		echo '</tr>';
+	}
+
+	/**
+	 * Format an address based on name and address information.
+	 *
+	 * For translators, a sample default address:
+	 *
+	 * (1) First (2) Last
+	 * (3) Street Address 1
+	 * (4) Street Address 2
+	 * (5) City, (6) State (7) ZIP
+	 * (8) Country
+	 *
+	 * @since 2.0
+	 *
+	 * @param array $user_info
+	 * @param array $address
+	 * @return string $address
+	 */
+	public static function format_address( $user_info, $address ) {
+		$user_info = array_map( 'esc_attr', $user_info );
+		$address   = array_map( 'esc_attr', $address );
+
+		$address = apply_filters( 'edd_shipping_address_format', sprintf(
+			__( '<div><strong>%1$s %2$s</strong></div><div>%3$s</div><div>%4$s</div>%5$s, %6$s %7$s</div><div>%8$s</div>', 'edd-simple-shipping' ),
+			$user_info[ 'first_name' ],
+			$user_info[ 'last_name' ],
+			$address[ 'address' ],
+			$address[ 'address2' ],
+			$address[ 'city' ],
+			$address[ 'state' ],
+			$address[ 'zip' ],
+			$address[ 'country' ]
+		), $address, $user_info );
+
+		return $address;
+	}
+
+	/**
+	 * Mark a payment as shipped.
+	 *
+	 * @since 2.0
+	 *
+	 * @return void
+	 */
+	function frontend_toggle_shipped_status() {
+
+		$payment_id = absint( $_GET[ 'order_id' ] );
+		$status     = ! empty( $_GET['new_status'] ) ? absint( $_GET['new_status'] ) : '1';
+		$key        = edd_get_payment_key( $payment_id );
+
+		if ( ! EDD_FES()->vendors->vendor_can_view_receipt( false, $key ) ) {
+			wp_safe_redirect( wp_get_referer() ); exit;
+		}
+
+		update_post_meta( $payment_id, '_edd_payment_shipping_status', $status );
+
+		wp_safe_redirect( wp_get_referer() );
+
+		exit();
+	}
+
 
 }
 
