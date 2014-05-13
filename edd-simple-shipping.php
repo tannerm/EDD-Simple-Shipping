@@ -504,7 +504,7 @@ class EDD_Simple_Shipping {
 	 */
 	public function ajax_shipping_rate() {
 
-		$country = $_POST['country'];
+		$country = ! empty( $_POST['country'] ) ? $_POST['country'] : $this->get_base_region();
 		$total   = edd_get_cart_total();
 		$current = EDD()->fees->get_fee( 'simple_shipping' );
 
@@ -512,8 +512,9 @@ class EDD_Simple_Shipping {
 		$total -= $current['amount'];
 		EDD()->fees->remove_fee( 'simple_shipping' );
 
-		if( $country != $this->get_base_region() )
+		if( $country != $this->get_base_region() ) {
 			$this->is_domestic = false;
+		}
 
 		// Calculate new shipping
 		$shipping = $this->calc_total_shipping();
@@ -629,17 +630,19 @@ class EDD_Simple_Shipping {
 				if( billing && edd_global_vars.taxes_enabled == 1 )
 					return; // EDD core will recalculate on billing address change if taxes are enabled
 
-				if( val =='US') {
+				if( val == 'US' ) {
 					$('#shipping_state_other').hide();$('#shipping_state_us').show();$('#shipping_state_ca').hide();
 				} else if(  val =='CA') {
 					$('#shipping_state_other').hide();$('#shipping_state_us').hide();$('#shipping_state_ca').show();
 				} else {
 					$('#shipping_state_other').show();$('#shipping_state_us').hide();$('#shipping_state_ca').hide();
 				}
+
 				var postData = {
 		            action: 'edd_get_shipping_rate',
 		            country:  val
 		        };
+
 		        $.ajax({
 		            type: "POST",
 		            data: postData,
@@ -665,7 +668,7 @@ class EDD_Simple_Shipping {
 
 				var postData = {
 		            action: 'edd_get_shipping_rate',
-		            country: data.postdata.country
+		            country: data.postdata.billing_country
 		        };
 		        $.ajax({
 		            type: "POST",
