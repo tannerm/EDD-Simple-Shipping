@@ -432,11 +432,27 @@ class EDD_Simple_Shipping {
 	 * @access private
 	 * @return string
 	 */
-	private function get_base_region() {
+	private function get_base_region( $download_id = 0 ) {
 
 		global $edd_options;
 
-		return isset( $edd_options['edd_simple_shipping_base_country'] ) ? $edd_options['edd_simple_shipping_base_country'] : 'US';
+		if( ! empty( $download_id ) ) {
+
+			$author  = get_post_field( 'post_author', $download_id );
+			$country = get_user_meta( $author, 'vendor_country', true );
+			if( $country ) {
+				$countries   = edd_get_country_list();
+				$code        = array_search( $country, $countries );
+				if( false !== $code ) {
+					$base_region = $code;
+				}
+			}
+
+		}
+
+		$base_region = isset( $base_region ) ? $base_region : edd_get_option( 'edd_simple_shipping_base_country', 'US' );
+
+		return $base_region;
 
 	}
 
@@ -459,13 +475,6 @@ class EDD_Simple_Shipping {
 		if( ! is_array( $cart_contents ) )
 			return false;
 
-		if( is_user_logged_in() && empty( $_POST['country'] ) ) {
-			$address = get_user_meta( get_current_user_id(), '_edd_user_address', true );
-			if( isset( $address['country'] ) && $address['country'] != $this->get_base_region() ) {
-				$this->is_domestic = false;
-			}
-		}
-
 		$amount = 0.00;
 
 		foreach( $cart_contents as $item ) {
@@ -473,6 +482,26 @@ class EDD_Simple_Shipping {
 			$price_id = isset( $item['options']['price_id'] ) ? (int) $item['options']['price_id'] : null;
 
 			if( $this->item_has_shipping( $item['id'], $price_id ) ) {
+
+				if( is_user_logged_in() && empty( $_POST['country'] ) ) {
+
+					$address = get_user_meta( get_current_user_id(), '_edd_user_address', true );
+					if( isset( $address['country'] ) && $address['country'] != $this->get_base_region( $item['id'] ) ) {
+						$this->is_domestic = false;
+					} else {
+						$this->is_domestic = true;
+					}
+
+				} else {
+
+					$country = ! empty( $_POST['country'] ) ? $_POST['country'] : $this->get_base_region();
+
+					if( $country != $this->get_base_region( $item['id'] ) ) {
+						$this->is_domestic = false;
+					} else {
+						$this->is_domestic = true;
+					}
+				}
 
 				if( $this->is_domestic ) {
 
@@ -511,10 +540,6 @@ class EDD_Simple_Shipping {
 		// Get rid of our current shipping
 		$total -= $current['amount'];
 		EDD()->fees->remove_fee( 'simple_shipping' );
-
-		if( $country != $this->get_base_region() ) {
-			$this->is_domestic = false;
-		}
 
 		// Calculate new shipping
 		$shipping = $this->calc_total_shipping();
