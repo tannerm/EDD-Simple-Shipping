@@ -169,7 +169,7 @@ class EDD_Simple_Shipping {
 			add_action( 'fes_custom_post_button', array( $this, 'edd_fes_simple_shipping_field_button' ) );
 			add_action( 'fes_admin_field_edd_simple_shipping', array( $this, 'edd_fes_simple_shipping_admin_field' ), 10, 3 );
 			add_filter( 'fes_formbuilder_custom_field', array( $this, 'edd_fes_simple_shipping_formbuilder_is_custom_field' ), 10, 2 );
-			add_action( 'fes_submission_form_save_custom_fields', array( $this, 'edd_fes_simple_shipping_save_custom_fields' ) );
+			add_action( 'fes_submit_submission_form_bottom', array( $this, 'edd_fes_simple_shipping_save_custom_fields' ) );
 			add_action( 'fes_render_field_edd_simple_shipping', array( $this, 'edd_fes_simple_shipping_field' ), 10, 3 );
 
 		}
@@ -306,7 +306,8 @@ class EDD_Simple_Shipping {
 		$enabled       = get_post_meta( $post_id, '_edd_enable_shipping', true );
 		$display       = $enabled ? '' : 'style="display:none;"';
 		$prices        = edd_get_variable_prices( $post_id );
-		$shipping      = isset( $prices[ $price_key ]['shipping'] ) ? $prices[ $price_key ]['shipping'] : '';
+		$shipping      = isset( $prices[ $price_key ]['shipping'] );
+		var_dump( $shipping );
 ?>
 		<td class="edd_prices_shipping"<?php echo $display; ?>>
 			<label for="edd_variable_prices[<?php echo $price_key; ?>][shipping]">
@@ -1503,6 +1504,14 @@ class EDD_Simple_Shipping {
 			update_post_meta( $post_id, '_edd_enable_shipping', '1' );
 			update_post_meta( $post_id, '_edd_shipping_domestic', $domestic );
 			update_post_meta( $post_id, '_edd_shipping_international', $international );
+
+			$prices = edd_get_variable_prices( $post_id );
+			if( ! empty( $prices ) ) {
+				foreach( $prices as $price_id => $price ) {
+					$prices[ $price_id ]['shipping'] = '1';
+				}
+				update_post_meta( $post_id, 'edd_variable_prices', $prices );
+			}
 		} else {
 			delete_post_meta( $post_id, '_edd_enable_shipping' );
 		}
