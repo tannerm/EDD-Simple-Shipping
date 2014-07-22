@@ -1363,11 +1363,16 @@ class EDD_Simple_Shipping {
 		echo '<td><strong>' . __( 'Shipping Address', 'edd-simple-shipping' ) . '</strong></td>';
 		echo '<td>' . self::format_address( $user_info, $address ) . '<td>';
 		echo '</tr>';
-		echo '<tr>';
-			echo '<td colspan="2">';
-				echo '<a href="' . esc_attr( $toggle_url ) . '" class="edd-simple-shipping-toggle-status">' . $toggle_text . '</a>';
-			echo '</td>';
-		echo '</tr>';
+
+		if( current_user_can( 'edit_shop_payments' ) || current_user_can( 'frontend_vendor' ) ) {
+
+			echo '<tr>';
+				echo '<td colspan="2">';
+					echo '<a href="' . esc_attr( $toggle_url ) . '" class="edd-simple-shipping-toggle-status">' . $toggle_text . '</a>';
+				echo '</td>';
+			echo '</tr>';
+
+		}
 	}
 
 	/**
