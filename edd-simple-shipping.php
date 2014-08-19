@@ -534,11 +534,8 @@ class EDD_Simple_Shipping {
 	public function ajax_shipping_rate() {
 
 		$country = ! empty( $_POST['country'] ) ? $_POST['country'] : $this->get_base_region();
-		$total   = edd_get_cart_total();
-		$current = EDD()->fees->get_fee( 'simple_shipping' );
-
+	
 		// Get rid of our current shipping
-		$total -= $current['amount'];
 		EDD()->fees->remove_fee( 'simple_shipping' );
 
 		// Calculate new shipping
@@ -546,13 +543,13 @@ class EDD_Simple_Shipping {
 
 		EDD()->fees->add_fee( $shipping, __( 'Shipping Costs', 'edd-simple-shipping' ), 'simple_shipping' );
 
-		// Add our shipping to the total
-		$total += $shipping;
+		ob_start();
+		edd_checkout_cart();
+		$cart = ob_get_clean();
 
-		// Setup out response
 		$response = array(
-			'shipping_amount' => html_entity_decode( edd_currency_filter( edd_format_amount( $shipping ) ), ENT_COMPAT, 'UTF-8' ),
-			'total' => html_entity_decode( edd_currency_filter( edd_format_amount( $total ) ), ENT_COMPAT, 'UTF-8' ),
+			'html'  => $cart,
+			'total' => html_entity_decode( edd_cart_total( false ), ENT_COMPAT, 'UTF-8' ),
 		);
 
 		echo json_encode( $response );
@@ -652,7 +649,7 @@ class EDD_Simple_Shipping {
 					billing = false;
 				}
 
-				if( billing && edd_global_vars.taxes_enabled == 1 )
+				if( billing && edd_global_vars.taxes_enabled == '1' )
 					return; // EDD core will recalculate on billing address change if taxes are enabled
 
 				if( val == 'US' ) {
@@ -674,15 +671,15 @@ class EDD_Simple_Shipping {
 		            dataType: "json",
 		            url: edd_global_vars.ajaxurl,
 		            success: function (response) {
-		                if( response ) {
-		                	$('.edd_cart_amount').text( response.total );
-		                	$('#edd_cart_fee_simple_shipping .edd_cart_fee_amount').text( response.shipping_amount );
-		                } else {
-		                    console.log( response );
-		                }
+						$('#edd_checkout_cart').replaceWith(response.html);
+						$('.edd_cart_amount').each(function() {
+							$(this).text(response.total);
+						});
 		            }
 		        }).fail(function (data) {
-		            console.log(data);
+		            if ( window.console && window.console.log ) {
+						console.log( data );
+					}
 		        });
 			});
 
@@ -693,7 +690,8 @@ class EDD_Simple_Shipping {
 
 				var postData = {
 		            action: 'edd_get_shipping_rate',
-		            country: data.postdata.billing_country
+		            country: data.postdata.billing_country,
+		            state: data.postdata.state
 		        };
 		        $.ajax({
 		            type: "POST",
@@ -702,14 +700,22 @@ class EDD_Simple_Shipping {
 		            url: edd_global_vars.ajaxurl,
 		            success: function (response) {
 		                if( response ) {
-		                	$('.edd_cart_amount').text( response.total );
-		                	$('#edd_cart_fee_simple_shipping .edd_cart_fee_amount').text( response.shipping_amount );
+
+							$('#edd_checkout_cart').replaceWith(response.html);
+							$('.edd_cart_amount').each(function() {
+								$(this).text(response.total);
+							});
+
 		                } else {
-		                    console.log( response );
-		                }
+							if ( window.console && window.console.log ) {
+								console.log( response );
+							}
+				       	}
 		            }
 		        }).fail(function (data) {
-		            console.log(data);
+					if ( window.console && window.console.log ) {
+						console.log( data );
+					}
 		        });
 
 			});
@@ -725,15 +731,15 @@ class EDD_Simple_Shipping {
 		            dataType: "json",
 		            url: edd_global_vars.ajaxurl,
 		            success: function (response) {
-		                if( response ) {
-		                	$('.edd_cart_amount').text( response.total );
-		                	$('#edd_cart_fee_simple_shipping .edd_cart_fee_amount').text( response.shipping_amount );
-		                } else {
-		                    console.log( response );
-		                }
+		               $('#edd_checkout_cart').replaceWith(response.html);
+						$('.edd_cart_amount').each(function() {
+							$(this).text(response.total);
+						});
 		            }
 		        }).fail(function (data) {
-		            console.log(data);
+		            if ( window.console && window.console.log ) {
+						console.log( data );
+					}
 		        });
 			});
 			$('#edd_simple_shipping_show').change(function() {
