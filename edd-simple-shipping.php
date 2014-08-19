@@ -1430,8 +1430,10 @@ class EDD_Simple_Shipping {
 		$status     = ! empty( $_GET['new_status'] ) ? absint( $_GET['new_status'] ) : '1';
 		$key        = edd_get_payment_key( $payment_id );
 
-		if ( ! EDD_FES()->vendors->vendor_can_view_receipt( false, $key ) ) {
-			wp_safe_redirect( wp_get_referer() ); exit;
+		if( function_exists( 'EDD_FES' ) ) {
+			if ( ! EDD_FES()->vendors->vendor_can_view_receipt( false, $key ) ) {
+				wp_safe_redirect( wp_get_referer() ); exit;
+			}
 		}
 
 		update_post_meta( $payment_id, '_edd_payment_shipping_status', $status );
