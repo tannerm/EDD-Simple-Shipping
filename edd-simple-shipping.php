@@ -358,10 +358,11 @@ class EDD_Simple_Shipping {
 		$meta['user_info'] = $user_info;
 		update_post_meta( $payment_id, '_edd_payment_meta', $meta );
 
-		if( isset( $_POST['edd-payment-shipped'] ) )
+		if( isset( $_POST['edd-payment-shipped'] ) ) {
 			update_post_meta( $payment_id, '_edd_payment_shipping_status', '2' );
-		else
-			delete_post_meta( $payment_id, '_edd_payment_shipping_status' );
+		} elseif( get_post_meta( $payment_id, '_edd_payment_shipping_status', true ) ) {
+			update_post_meta( $payment_id, '_edd_payment_shipping_status', '1' );
+		}
 	}
 
 	/**
