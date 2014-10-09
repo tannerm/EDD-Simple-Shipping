@@ -1399,8 +1399,6 @@ class EDD_Simple_Shipping {
 	 * @return string $address
 	 */
 	public static function format_address( $user_info, $address ) {
-		$user_info = array_map( 'esc_attr', $user_info );
-		$address   = array_map( 'esc_attr', $address );
 
 		$address = apply_filters( 'edd_shipping_address_format', sprintf(
 			__( '<div><strong>%1$s %2$s</strong></div><div>%3$s</div><div>%4$s</div>%5$s, %6$s %7$s</div><div>%8$s</div>', 'edd-simple-shipping' ),
