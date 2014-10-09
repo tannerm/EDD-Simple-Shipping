@@ -1067,8 +1067,10 @@ class EDD_Simple_Shipping {
 								</p>
 							</div>
 						</div>
-						<input type="checkbox" name="edd-payment-shipped" value="1"<?php checked( $shipped, true ); ?>/>
-						<span class="description"><?php _e( 'Check if this purchase has been shipped.', 'edd-simple-shipping' ); ?></span>
+						<label for="edd-payment-shipped">
+							<input type="checkbox" id="edd-payment-shipped" name="edd-payment-shipped" value="1"<?php checked( $shipped, true ); ?>/>
+							<?php _e( 'Check if this purchase has been shipped.', 'edd-simple-shipping' ); ?>
+						</label>
 					</div>
 				</div><!-- /#edd-order-address -->
 
