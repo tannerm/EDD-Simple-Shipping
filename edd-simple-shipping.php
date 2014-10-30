@@ -1539,6 +1539,7 @@ class EDD_Simple_Shipping {
 	 */
 	function edd_fes_simple_shipping_field( $attr, $post_id, $type ) {
 
+		$required = '';
 		if ( isset( $attr['required'] ) && $attr['required'] == 'yes' ) {
 			$required = apply_filters( 'fes_required_class', ' edd-required-indicator', $attr );
 		}
