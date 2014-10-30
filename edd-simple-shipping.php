@@ -1511,7 +1511,7 @@ class EDD_Simple_Shipping {
 	 * @return void
 	 */
 	function edd_fes_simple_shipping_save_custom_fields( $post_id ) {
-		if ( isset( $_POST ['edd_simple_shipping'] ) ) {
+		if ( isset( $_POST ['edd_simple_shipping'] ) && isset( $_POST ['edd_simple_shipping']['enabled'] ) ) {
 			$domestic      = ! empty( $_POST ['edd_simple_shipping']['domestic'] ) ? edd_sanitize_amount( $_POST ['edd_simple_shipping']['domestic'] ) : 0;
 			$international = ! empty( $_POST ['edd_simple_shipping']['international'] ) ? edd_sanitize_amount( $_POST ['edd_simple_shipping']['international'] ) : 0;
 			update_post_meta( $post_id, '_edd_enable_shipping', '1' );
