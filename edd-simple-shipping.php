@@ -124,7 +124,7 @@ class EDD_Simple_Shipping {
 		add_filter( 'edd_paypal_redirect_args', array( $this, 'send_shipping_to_paypal' ), 10, 2 );
 
 		// Display the user's shipping info in the View Details popup
-		add_action( 'edd_view_order_details_main_before', array( $this, 'show_shipping_details' ), 10, 2 );
+		add_action( 'edd_view_order_details_billing_after', array( $this, 'show_shipping_details' ), 10 );
 
 		// Set payment as not shipped
 		add_action( 'edd_insert_payment', array( $this, 'set_as_not_shipped' ), 10, 2 );
