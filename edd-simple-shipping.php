@@ -534,15 +534,8 @@ class EDD_Simple_Shipping {
 	 */
 	public function ajax_shipping_rate() {
 
-		$country = ! empty( $_POST['country'] ) ? $_POST['country'] : $this->get_base_region();
-
-		// Get rid of our current shipping
-		EDD()->fees->remove_fee( 'simple_shipping' );
-
 		// Calculate new shipping
-		$shipping = $this->calc_total_shipping();
-
-		EDD()->fees->add_fee( $shipping, __( 'Shipping Costs', 'edd-simple-shipping' ), 'simple_shipping' );
+		$shipping = $this->apply_shipping_fees();
 
 		ob_start();
 		edd_checkout_cart();
@@ -569,26 +562,100 @@ class EDD_Simple_Shipping {
 	 */
 	public function apply_shipping_fees() {
 
+		$this->remove_shipping_fees();
+
 		if( ! $this->cart_needs_shipping() ) {
-			EDD()->fees->remove_fee( 'simple_shipping' );
 			return;
 		}
 
-		$amount = $this->calc_total_shipping();
+		$cart_contents = edd_get_cart_contents();
 
-		if( $amount ) {
+		if( ! is_array( $cart_contents ) ) {
+			return;
+		}
 
-			EDD()->fees->add_fee( array(
-				'amount' => $amount,
-				'label'  => __( 'Shipping Costs', 'edd-simple-shipping' ),
-				'id'     => 'simple_shipping'
-			) );
+		$amount = 0.00;
 
-		} else {
+		foreach( $cart_contents as $key => $item ) {
 
-			EDD()->fees->remove_fee( 'simple_shipping' );
+			$price_id = isset( $item['options']['price_id'] ) ? (int) $item['options']['price_id'] : null;
+
+			if( ! $this->item_has_shipping( $item['id'], $price_id ) ) {
+
+				continue;
+
+			}
+
+			if( is_user_logged_in() && empty( $_POST['country'] ) ) {
+
+				$address = get_user_meta( get_current_user_id(), '_edd_user_address', true );
+				if( isset( $address['country'] ) && $address['country'] != $this->get_base_region( $item['id'] ) ) {
+					$this->is_domestic = false;
+				} else {
+					$this->is_domestic = true;
+				}
+
+			} else {
+
+				$country = ! empty( $_POST['country'] ) ? $_POST['country'] : $this->get_base_region();
+
+				if( $country != $this->get_base_region( $item['id'] ) ) {
+					$this->is_domestic = false;
+				} else {
+					$this->is_domestic = true;
+				}
+			}
+
+			if( $this->is_domestic ) {
+
+				$amount += (float) get_post_meta( $item['id'], '_edd_shipping_domestic', true );
+
+			} else {
+
+				$amount += (float) get_post_meta( $item['id'], '_edd_shipping_international', true );
+
+			}
+
+			if( $amount > 0 ) {
+
+				EDD()->fees->add_fee( array(
+					'amount'      => $amount,
+					'label'       => sprintf( __( '%s Shipping', 'edd-simple-shipping' ), get_the_title( $item['id'] ) ),
+					'id'          => 'simple_shipping_' . $key,
+					'download_id' => $item['id']
+				) );
+
+			}
 
 		}
+
+	}
+
+	/**
+	 * Removes all shipping fees from the cart
+	 *
+	 * @since 2.1
+	 *
+	 * @access public
+	 * @return void
+	 */
+	public function remove_shipping_fees() {
+
+		$fees = EDD()->fees->get_fees( 'fee' );
+		if( empty( $fees ) ) {
+			return;
+		}
+
+		foreach( $fees as $key => $fee ) {
+
+			if( false === strpos( $key, 'simple_shipping_' ) ) {
+				continue;
+			}
+
+			unset( $fees[ $key ] );
+
+		}
+
 	}
 
 
