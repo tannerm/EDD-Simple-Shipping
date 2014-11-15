@@ -576,11 +576,11 @@ class EDD_Simple_Shipping {
 
 		$amount = $this->calc_total_shipping();
 
-		if( $amount )
+		if( $amount ) {
 			EDD()->fees->add_fee( $amount, __( 'Shipping Costs', 'edd-simple-shipping' ), 'simple_shipping' );
-		else
+		} else {
 			EDD()->fees->remove_fee( 'simple_shipping' );
-
+		}
 	}
 
 
