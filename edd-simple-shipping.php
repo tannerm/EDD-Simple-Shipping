@@ -154,7 +154,7 @@ class EDD_Simple_Shipping {
 
 		add_filter( 'edd_payments_table_bulk_actions', array( $this, 'register_bulk_action' ) );
 		add_action( 'edd_payments_table_do_bulk_action', array( $this, 'process_bulk_actions' ), 10, 2 );
-		
+
 		if( $this->is_fes ) {
 
 			/**
@@ -535,7 +535,7 @@ class EDD_Simple_Shipping {
 	public function ajax_shipping_rate() {
 
 		$country = ! empty( $_POST['country'] ) ? $_POST['country'] : $this->get_base_region();
-	
+
 		// Get rid of our current shipping
 		EDD()->fees->remove_fee( 'simple_shipping' );
 
@@ -577,9 +577,17 @@ class EDD_Simple_Shipping {
 		$amount = $this->calc_total_shipping();
 
 		if( $amount ) {
-			EDD()->fees->add_fee( $amount, __( 'Shipping Costs', 'edd-simple-shipping' ), 'simple_shipping' );
+
+			EDD()->fees->add_fee( array(
+				'amount' => $amount,
+				'label'  => __( 'Shipping Costs', 'edd-simple-shipping' ),
+				'id'     => 'simple_shipping'
+			) );
+
 		} else {
+
 			EDD()->fees->remove_fee( 'simple_shipping' );
+
 		}
 	}
 
@@ -1021,18 +1029,18 @@ class EDD_Simple_Shipping {
 									<strong class="order-data-address-line"><?php _e( 'Street Address Line 2:', 'edd' ); ?></strong><br/>
 									<input type="text" name="edd-payment-shipping-address[0][address2]" value="<?php esc_attr_e( $address['address2'] ); ?>" class="medium-text" />
 								</p>
-									
+
 							</div>
 							<div class="column">
 								<p>
 									<strong class="order-data-address-line"><?php echo _x( 'City:', 'Address City', 'edd' ); ?></strong><br/>
 									<input type="text" name="edd-payment-shipping-address[0][city]" value="<?php esc_attr_e( $address['city'] ); ?>" class="medium-text"/>
-									
+
 								</p>
 								<p>
 									<strong class="order-data-address-line"><?php echo _x( 'Zip / Postal Code:', 'Zip / Postal code of address', 'edd' ); ?></strong><br/>
 									<input type="text" name="edd-payment-shipping-address[0][zip]" value="<?php esc_attr_e( $address['zip'] ); ?>" class="medium-text"/>
-									
+
 								</p>
 							</div>
 							<div class="column">
@@ -1447,7 +1455,7 @@ class EDD_Simple_Shipping {
 
 
 	/**
-	 * Register a custom FES submission form button 
+	 * Register a custom FES submission form button
 	 *
 	 * @since 2.0
 	 *
