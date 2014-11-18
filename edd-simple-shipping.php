@@ -1555,7 +1555,7 @@ class EDD_Simple_Shipping {
 			<?php FES_Formbuilder_Templates::hidden_field( "[$field_id][input_type]", 'edd_simple_shipping' ); ?>
 			<?php FES_Formbuilder_Templates::hidden_field( "[$field_id][template]", 'edd_simple_shipping' ); ?>
 			<div class="fes-form-holder">
-				<?php FES_Formbuilder_Templates::common( $field_id, 'edd_simple_shipping', false, $values ); ?>
+				<?php FES_Formbuilder_Templates::common( $field_id, 'edd_simple_shipping', false, $values, false, '' ); ?>
 			</div> <!-- .fes-form-holder -->
 		</li>
 		<?php
