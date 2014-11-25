@@ -639,7 +639,7 @@ class EDD_Simple_Shipping {
 	 * @access public
 	 * @return void
 	 */
-	public function remove_shipping_fees() {
+	public function remove_shipping_fees( $download_id, $options ) {
 
 		$fees = EDD()->fees->get_fees( 'fee' );
 		if( empty( $fees ) ) {
@@ -648,13 +648,15 @@ class EDD_Simple_Shipping {
 
 		foreach( $fees as $key => $fee ) {
 
-			if( false === strpos( $key, 'simple_shipping_' ) ) {
+			if( false === strpos( $key, 'simple_shipping' ) ) {
 				continue;
 			}
 
 			unset( $fees[ $key ] );
 
 		}
+
+		EDD()->session->set( 'edd_cart_fees', $fees );
 
 	}
 
@@ -668,7 +670,6 @@ class EDD_Simple_Shipping {
 	 * @return bool
 	 */
 	private function needs_shipping_fields() {
-
 		return $this->cart_needs_shipping();
 
 	}
