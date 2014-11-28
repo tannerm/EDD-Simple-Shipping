@@ -639,7 +639,7 @@ class EDD_Simple_Shipping {
 	 * @access public
 	 * @return void
 	 */
-	public function remove_shipping_fees( $download_id, $options ) {
+	public function remove_shipping_fees() {
 
 		$fees = EDD()->fees->get_fees( 'fee' );
 		if( empty( $fees ) ) {
