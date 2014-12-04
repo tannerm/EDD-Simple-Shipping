@@ -196,7 +196,7 @@ class EDD_Simple_Shipping {
 
 		// Set filter for plugin's languages directory
 		$lang_dir = dirname( plugin_basename( __FILE__ ) ) . '/languages/';
-		$lang_dir = apply_filters( 'edd_manual_purchases_lang_directory', $lang_dir );
+		$lang_dir = apply_filters( 'edd_simple_shipping_lang_directory', $lang_dir );
 
 		// Load the translations
 		load_plugin_textdomain( 'edd-simple-shipping', false, $lang_dir );
