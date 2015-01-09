@@ -459,70 +459,6 @@ class EDD_Simple_Shipping {
 
 
 	/**
-	 * Calculate the total shipping costs on the cart
-	 *
-	 * @since 1.0
-	 *
-	 * @access public
-	 * @return float
-	 */
-	public function calc_total_shipping() {
-
-		if( ! $this->cart_needs_shipping() )
-			return false;
-
-		$cart_contents = edd_get_cart_contents();
-
-		if( ! is_array( $cart_contents ) )
-			return false;
-
-		$amount = 0.00;
-
-		foreach( $cart_contents as $item ) {
-
-			$price_id = isset( $item['options']['price_id'] ) ? (int) $item['options']['price_id'] : null;
-
-			if( $this->item_has_shipping( $item['id'], $price_id ) ) {
-
-				if( is_user_logged_in() && empty( $_POST['country'] ) ) {
-
-					$address = get_user_meta( get_current_user_id(), '_edd_user_address', true );
-					if( isset( $address['country'] ) && $address['country'] != $this->get_base_region( $item['id'] ) ) {
-						$this->is_domestic = false;
-					} else {
-						$this->is_domestic = true;
-					}
-
-				} else {
-
-					$country = ! empty( $_POST['country'] ) ? $_POST['country'] : $this->get_base_region();
-
-					if( $country != $this->get_base_region( $item['id'] ) ) {
-						$this->is_domestic = false;
-					} else {
-						$this->is_domestic = true;
-					}
-				}
-
-				if( $this->is_domestic ) {
-
-					$amount += (float) get_post_meta( $item['id'], '_edd_shipping_domestic', true );
-
-				} else {
-
-					$amount += (float) get_post_meta( $item['id'], '_edd_shipping_international', true );
-
-				}
-
-			}
-		}
-
-		return apply_filters( 'edd_simple_shipping_total', $amount );
-
-	}
-
-
-	/**
 	 * Update the shipping costs via ajax
 	 *
 	 * This fires when the customer changes the country they are shipping to
@@ -608,11 +544,11 @@ class EDD_Simple_Shipping {
 
 			if( $this->is_domestic ) {
 
-				$amount += (float) get_post_meta( $item['id'], '_edd_shipping_domestic', true );
+				$amount = (float) get_post_meta( $item['id'], '_edd_shipping_domestic', true );
 
 			} else {
 
-				$amount += (float) get_post_meta( $item['id'], '_edd_shipping_international', true );
+				$amount = (float) get_post_meta( $item['id'], '_edd_shipping_international', true );
 
 			}
 
