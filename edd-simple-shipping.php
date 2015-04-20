@@ -3,7 +3,7 @@
 Plugin Name: Easy Digital Downloads - Simple Shipping
 Plugin URI: http://easydigitaldownloads.com/extension/simple-shipping
 Description: Provides the ability to charge simple shipping fees for physical products in EDD
-Version: 2.1.3
+Version: 2.1.4
 Author: Pippin Williamson
 Author URI:  http://pippinsplugins.com
 Contributors: mordauk
@@ -58,7 +58,7 @@ class EDD_Simple_Shipping {
 	 */
 	public function __construct() {
 
-		define( 'EDD_SIMPLE_SHIPPING_VERSION', '2.1.3' );
+		define( 'EDD_SIMPLE_SHIPPING_VERSION', '2.1.4' );
 
 		$this->init();
 
@@ -1332,17 +1332,17 @@ class EDD_Simple_Shipping {
 			$new_status = '2';
 		}
 
-		$toggle_url = add_query_arg( array(
+		$toggle_url = esc_url( add_query_arg( array(
 			'edd_action' => 'toggle_shipped_status',
 			'order_id'   => $order->ID,
 			'new_status' => $new_status
-		) );
+		) ) );
 
 		$toggle_text = $shipped == '2' ? __( 'Mark as not shipped', 'edd-simple-shipping' ) : __( 'Mark as shipped', 'edd-simple-shipping' );
 
 		echo '<td>' . esc_html( $value );
 			if( $shipped ) {
-				echo '<span class="edd-simple-shipping-sep">&nbsp;&ndash;&nbsp;</span><a href="' . esc_attr( $toggle_url ) . '" class="edd-simple-shipping-toggle-status">' . $toggle_text . '</a>';
+				echo '<span class="edd-simple-shipping-sep">&nbsp;&ndash;&nbsp;</span><a href="' . $toggle_url . '" class="edd-simple-shipping-toggle-status">' . $toggle_text . '</a>';
 			}
 		echo '</td>';
 	}
@@ -1372,11 +1372,11 @@ class EDD_Simple_Shipping {
 			$new_status = '2';
 		}
 
-		$toggle_url = add_query_arg( array(
+		$toggle_url = esc_url( add_query_arg( array(
 			'edd_action' => 'toggle_shipped_status',
 			'order_id'   => $payment->ID,
 			'new_status' => $new_status
-		) );
+		) ) );
 
 		$toggle_text = $shipped == '2' ? __( 'Mark as not shipped', 'edd-simple-shipping' ) : __( 'Mark as shipped', 'edd-simple-shipping' );
 
@@ -1389,7 +1389,7 @@ class EDD_Simple_Shipping {
 
 			echo '<tr>';
 				echo '<td colspan="2">';
-					echo '<a href="' . esc_attr( $toggle_url ) . '" class="edd-simple-shipping-toggle-status">' . $toggle_text . '</a>';
+					echo '<a href="' . $toggle_url . '" class="edd-simple-shipping-toggle-status">' . $toggle_text . '</a>';
 				echo '</td>';
 			echo '</tr>';
 
