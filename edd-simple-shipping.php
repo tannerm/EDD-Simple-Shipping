@@ -1573,7 +1573,7 @@ class EDD_Simple_Shipping {
 			</label>
 			<div class="edd-fes-shipping-fields">
 				<label for="edd_simple_shipping[domestic]"><?php _e( 'Domestic', 'edd-simple-shipping' ); ?></label>
-				<label for="edd_simple_shipping[domestic]"><?php _e( 'International', 'edd-simple-shipping' ); ?></label>
+				<label for="edd_simple_shipping[international]"><?php _e( 'International', 'edd-simple-shipping' ); ?></label>
 				<input class="edd-shipping-field textfield<?php echo esc_attr( $required ); ?>" id="edd_simple_shipping[domestic]" type="text" data-required="<?php echo $attr['required'] ?>" data-type="text" name="<?php echo esc_attr( $attr['name'] ); ?>[domestic]" placeholder="<?php echo __( 'Enter the domestic shipping charge amount', 'edd-simple-shipping' ); ?>" value="<?php echo esc_attr( $domestic ) ?>" size="10" />
 				<input class="edd-shipping-field textfield<?php echo esc_attr( $required ); ?>" id="edd_simple_shipping[international]" type="text" data-required="<?php echo $attr['required'] ?>" data-type="text" name="<?php echo esc_attr( $attr['name'] ); ?>[international]" placeholder="<?php echo __( 'Enter the international shipping charge amount', 'edd-simple-shipping' ); ?>" value="<?php echo esc_attr( $international ) ?>" size="10" />
 			</div>
