@@ -7,6 +7,8 @@ Version: 2.1.4
 Author: Pippin Williamson
 Author URI:  http://pippinsplugins.com
 Contributors: mordauk
+Text Domain: edd-simple-shipping
+Domain Path: languages
 */
 
 class EDD_Simple_Shipping {
@@ -1258,7 +1260,7 @@ class EDD_Simple_Shipping {
 			array(
 				'id' => 'edd_simple_shipping_base_country',
 				'name' => __( 'Base Region', 'edd-simple-shipping'),
-				'desc' => __( 'Choose the country your store is based in', 'edd-simple-shipping '),
+				'desc' => __( 'Choose the country your store is based in', 'edd-simple-shipping'),
 				'type'  => 'select',
 				'options' => edd_get_country_list()
 			)
