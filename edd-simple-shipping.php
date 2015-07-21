@@ -868,6 +868,24 @@ class EDD_Simple_Shipping {
 				edd_set_error( 'missing_zip', __( 'Please enter a zip/postal code for shipping', 'edd-simple-shipping' ) );
 			}
 
+			if( empty( $post_data['shipping_country'] ) ) {
+				edd_set_error( 'missing_country', __( 'Please select your country', 'edd-simple-shipping' ) );
+			}
+
+			if( 'US' == $post_data['shipping_country'] ) {
+
+				if( empty( $post_data['shipping_state_us'] ) ) {
+					edd_set_error( 'missing_state', __( 'Please select your state', 'edd-simple-shipping' ) );
+				}
+
+			} elseif( 'CA' == $post_data['shipping_country'] ) {
+
+				if( empty( $post_data['shipping_state_ca'] ) ) {
+					edd_set_error( 'missing_province', __( 'Please select your province', 'edd-simple-shipping' ) );
+				}
+
+			}
+
 		} else {
 
 			// Shipping address is the same as billing
@@ -881,6 +899,20 @@ class EDD_Simple_Shipping {
 
 			if( empty( $post_data['card_zip'] ) ) {
 				edd_set_error( 'missing_zip', __( 'Please enter a zip/postal code for shipping', 'edd-simple-shipping' ) );
+			}
+
+			if( 'US' == $post_data['billing_country'] ) {
+
+				if( empty( $post_data['card_state'] ) ) {
+					edd_set_error( 'missing_state', __( 'Please select your state', 'edd-simple-shipping' ) );
+				}
+
+			} elseif( 'CA' == $post_data['billing_country'] ) {
+
+				if( empty( $post_data['card_state'] ) ) {
+					edd_set_error( 'missing_province', __( 'Please select your province', 'edd-simple-shipping' ) );
+				}
+
 			}
 
 		}
