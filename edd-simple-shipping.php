@@ -904,7 +904,6 @@ class EDD_Simple_Shipping {
 			$shipping_info['city']     = sanitize_text_field( $_POST['shipping_city'] );
 			$shipping_info['zip']      = sanitize_text_field( $_POST['shipping_zip'] );
 			$shipping_info['country']  = sanitize_text_field( $_POST['shipping_country'] );
-			$shipping_info['country']  = sanitize_text_field( $_POST['shipping_country'] );
 
 			// Shipping address is different
 			switch ( $_POST['shipping_country'] ) :
