@@ -847,34 +847,41 @@ class EDD_Simple_Shipping {
 	public function error_checks( $valid_data, $post_data ) {
 
 		// Only perform error checks if we have a product that needs shipping
-		if( ! $this->cart_needs_shipping() )
+		if( ! $this->cart_needs_shipping() ) {
 			return;
+		}
 
 		// Check to see if shipping is different than billing
 		if( isset( $post_data['edd_use_different_shipping'] ) || ! $this->has_billing_fields() ) {
 
 			// Shipping address is different
 
-			if( empty( $post_data['shipping_address'] ) )
+			if( empty( $post_data['shipping_address'] ) ) {
 				edd_set_error( 'missing_address', __( 'Please enter a shipping address', 'edd-simple-shipping' ) );
+			}
 
-			if( empty( $post_data['shipping_city'] ) )
+			if( empty( $post_data['shipping_city'] ) ) {
 				edd_set_error( 'missing_city', __( 'Please enter a city for shipping', 'edd-simple-shipping' ) );
+			}
 
-			if( empty( $post_data['shipping_zip'] ) )
+			if( empty( $post_data['shipping_zip'] ) ) {
 				edd_set_error( 'missing_zip', __( 'Please enter a zip/postal code for shipping', 'edd-simple-shipping' ) );
+			}
 
 		} else {
 
 			// Shipping address is the same as billing
-			if( empty( $post_data['card_address'] ) )
+			if( empty( $post_data['card_address'] ) ) {
 				edd_set_error( 'missing_address', __( 'Please enter a shipping address', 'edd-simple-shipping' ) );
+			}
 
-			if( empty( $post_data['card_city'] ) )
+			if( empty( $post_data['card_city'] ) ) {
 				edd_set_error( 'missing_city', __( 'Please enter a city for shipping', 'edd-simple-shipping' ) );
+			}
 
-			if( empty( $post_data['card_zip'] ) )
+			if( empty( $post_data['card_zip'] ) ) {
 				edd_set_error( 'missing_zip', __( 'Please enter a zip/postal code for shipping', 'edd-simple-shipping' ) );
+			}
 
 		}
 
@@ -891,8 +898,9 @@ class EDD_Simple_Shipping {
 	 */
 	public function set_shipping_info( $purchase_data, $valid_data ) {
 
-		if( ! $this->cart_needs_shipping() )
+		if( ! $this->cart_needs_shipping() ) {
 			return $purchase_data;
+		}
 
 		$shipping_info = array();
 
@@ -948,8 +956,9 @@ class EDD_Simple_Shipping {
 	 */
 	public function send_shipping_to_paypal( $paypal_args = array(), $purchase_data = array() ) {
 
-		if( ! $this->cart_needs_shipping() )
+		if( ! $this->cart_needs_shipping() ) {
 			return $paypal_args;
+		}
 
 		$shipping_info = $purchase_data['user_info']['shipping_info'];
 
@@ -981,8 +990,9 @@ class EDD_Simple_Shipping {
 
 		$shipping_info = ! empty( $payment_data['user_info']['shipping_info'] ) ? $payment_data['user_info']['shipping_info'] : false;
 
-		if( ! $shipping_info )
+		if( ! $shipping_info ) {
 			return;
+		}
 
 		// Indicate that this purchase needs shipped
 		update_post_meta( $payment_id, '_edd_payment_shipping_status', '1' );
