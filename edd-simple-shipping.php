@@ -625,9 +625,9 @@ class EDD_Simple_Shipping {
 	 */
 	private function has_billing_fields() {
 
-		$did_action = did_action( 'edd_after_cc_fields', 'edd_default_cc_address_fields' );
+		$did_action = has_action( 'edd_after_cc_fields', 'edd_default_cc_address_fields' );
 		if( ! $did_action && edd_use_taxes() )
-			$did_action = did_action( 'edd_purchase_form_after_cc_form', 'edd_checkout_tax_fields' );
+			$did_action = has_action( 'edd_purchase_form_after_cc_form', 'edd_checkout_tax_fields' );
 
 		// Have to assume all gateways are using the default CC fields (they should be)
 		return ( $did_action || isset( $_POST['card_address'] ) );
