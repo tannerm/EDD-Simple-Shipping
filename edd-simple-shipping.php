@@ -58,7 +58,7 @@ class EDD_Simple_Shipping {
 	 * @access public
 	 * @return void
 	 */
-	public function __construct() {
+	private function __construct() {
 
 		define( 'EDD_SIMPLE_SHIPPING_VERSION', '2.1.6' );
 
@@ -1638,6 +1638,7 @@ class EDD_Simple_Shipping {
  */
 
 function edd_simple_shipping_load() {
-	$edd_simple_shipping = new EDD_Simple_Shipping();
+	global $edd_simple_shipping;
+	$edd_simple_shipping = EDD_Simple_Shipping::get_instance();
 }
 add_action( 'plugins_loaded', 'edd_simple_shipping_load' );
