@@ -20,18 +20,18 @@ class EDD_Simple_Shipping {
 	 *
 	 * @since 1.0
 	 *
-	 * @access private
+	 * @access protected
 	 */
-	private $is_domestic = true;
+	protected $is_domestic = true;
 
 	/**
 	 * Flag for whether Frontend Submissions is enabled
 	 *
 	 * @since 2.0
 	 *
-	 * @access private
+	 * @access protected
 	 */
-	private $is_fes = true;
+	protected $is_fes = true;
 
 	/**
 	 * Get active object instance
@@ -72,10 +72,10 @@ class EDD_Simple_Shipping {
 	 *
 	 * @since 1.0
 	 *
-	 * @access private
+	 * @access protected
 	 * @return void
 	 */
-	private function init() {
+	protected function init() {
 
 		if( ! class_exists( 'Easy_Digital_Downloads' ) )
 			return; // EDD not present
@@ -238,7 +238,7 @@ class EDD_Simple_Shipping {
 		$display       = $enabled ? '' : 'style="display:none;"';
 		$domestic      = get_post_meta( $post_id, '_edd_shipping_domestic', true );
 		$international = get_post_meta( $post_id, '_edd_shipping_international', true );
-?>
+		?>
 		<div id="edd_simple_shipping">
 			<script type="text/javascript">jQuery(document).ready(function($) {$('#edd_enable_shipping').on('click',function() {$('#edd_simple_shipping_fields,.edd_prices_shipping').toggle();});});</script>
 			<p><strong><?php _e( 'Shipping Options', 'edd-simple-shipping' ); ?></strong></p>
@@ -275,7 +275,7 @@ class EDD_Simple_Shipping {
 				</table>
 			</div>
 		</div>
-<?php
+	<?php
 	}
 
 
@@ -290,9 +290,9 @@ class EDD_Simple_Shipping {
 	function price_header( $post_id = 0 ) {
 		$enabled       = get_post_meta( $post_id, '_edd_enable_shipping', true );
 		$display       = $enabled ? '' : 'style="display:none;"';
-?>
+		?>
 		<th class="edd_prices_shipping"<?php echo $display; ?>><?php _e( 'Shipping', 'edd-simple-shipping' ); ?></th>
-<?php
+	<?php
 	}
 
 
@@ -309,14 +309,14 @@ class EDD_Simple_Shipping {
 		$display       = $enabled ? '' : 'style="display:none;"';
 		$prices        = edd_get_variable_prices( $post_id );
 		$shipping      = isset( $prices[ $price_key ]['shipping'] );
-?>
+		?>
 		<td class="edd_prices_shipping"<?php echo $display; ?>>
 			<label for="edd_variable_prices[<?php echo $price_key; ?>][shipping]">
 				<input type="checkbox" value="1"<?php checked( true, $shipping ); ?> id="edd_variable_prices[<?php echo $price_key; ?>][shipping]" name="edd_variable_prices[<?php echo $price_key; ?>][shipping]" style="float:left;width:auto;margin:2px 5px 0 0;"/>
 				<span><?php _e( 'Check to enable shipping costs for this price.', 'edd-simple-shipping' ); ?></span>
-		</label>
+			</label>
 		</td>
-<?php
+	<?php
 	}
 
 
@@ -372,10 +372,10 @@ class EDD_Simple_Shipping {
 	 *
 	 * @since 1.0
 	 *
-	 * @access private
+	 * @access protected
 	 * @return bool
 	 */
-	private function item_has_shipping( $item_id = 0, $price_id = 0 ) {
+	protected function item_has_shipping( $item_id = 0, $price_id = 0 ) {
 		$enabled          = get_post_meta( $item_id, '_edd_enable_shipping', true );
 		$variable_pricing = edd_has_variable_prices( $item_id );
 
@@ -391,10 +391,10 @@ class EDD_Simple_Shipping {
 	 *
 	 * @since 1.0
 	 *
-	 * @access private
+	 * @access protected
 	 * @return bool
 	 */
-	private function price_has_shipping( $item_id = 0, $price_id = 0 ) {
+	protected function price_has_shipping( $item_id = 0, $price_id = 0 ) {
 		$prices = edd_get_variable_prices( $item_id );
 		$ret    = isset( $prices[ $price_id ]['shipping'] );
 		return (bool) apply_filters( 'edd_simple_shipping_price_hasa_shipping', $ret, $item_id, $price_id );
@@ -406,10 +406,10 @@ class EDD_Simple_Shipping {
 	 *
 	 * @since 1.0
 	 *
-	 * @access private
+	 * @access protected
 	 * @return bool
 	 */
-	private function cart_needs_shipping() {
+	protected function cart_needs_shipping() {
 		$cart_contents = edd_get_cart_contents();
 		$ret = false;
 		if( is_array( $cart_contents ) ) {
@@ -432,10 +432,10 @@ class EDD_Simple_Shipping {
 	 *
 	 * @since 1.0
 	 *
-	 * @access private
+	 * @access protected
 	 * @return string
 	 */
-	private function get_base_region( $download_id = 0 ) {
+	protected function get_base_region( $download_id = 0 ) {
 
 		global $edd_options;
 
@@ -604,10 +604,10 @@ class EDD_Simple_Shipping {
 	 *
 	 * @since 1.0
 	 *
-	 * @access private
+	 * @access protected
 	 * @return bool
 	 */
-	private function needs_shipping_fields() {
+	protected function needs_shipping_fields() {
 		return $this->cart_needs_shipping();
 
 	}
@@ -620,10 +620,10 @@ class EDD_Simple_Shipping {
 	 *
 	 * @since 1.0
 	 *
-	 * @access private
+	 * @access protected
 	 * @return bool
 	 */
-	private function has_billing_fields() {
+	protected function has_billing_fields() {
 
 		$did_action = did_action( 'edd_after_cc_fields', 'edd_default_cc_address_fields' );
 		if( ! $did_action && edd_use_taxes() )
@@ -651,116 +651,116 @@ class EDD_Simple_Shipping {
 		$display = $this->has_billing_fields() ? ' style="display:none;"' : '';
 
 		ob_start();
-?>
+		?>
 		<script type="text/javascript">var edd_global_vars; jQuery(document).ready(function($) {
-			$('body').on('change', 'select[name=shipping_country],select[name=billing_country]',function() {
+				$('body').on('change', 'select[name=shipping_country],select[name=billing_country]',function() {
 
-				var billing = true;
+					var billing = true;
 
-				if( $('select[name=billing_country]').length && ! $('#edd_simple_shipping_show').is(':checked') ) {
-					var val = $('select[name=billing_country]').val();
-				} else {
-					var val = $('select[name=shipping_country]').val();
-					billing = false;
-				}
-
-				if( billing && edd_global_vars.taxes_enabled == '1' )
-					return; // EDD core will recalculate on billing address change if taxes are enabled
-
-				if( val == 'US' ) {
-					$('#shipping_state_other').hide();$('#shipping_state_us').show();$('#shipping_state_ca').hide();
-				} else if(  val =='CA') {
-					$('#shipping_state_other').hide();$('#shipping_state_us').hide();$('#shipping_state_ca').show();
-				} else {
-					$('#shipping_state_other').show();$('#shipping_state_us').hide();$('#shipping_state_ca').hide();
-				}
-
-				var postData = {
-		            action: 'edd_get_shipping_rate',
-		            country:  val
-		        };
-
-		        $.ajax({
-		            type: "POST",
-		            data: postData,
-		            dataType: "json",
-		            url: edd_global_vars.ajaxurl,
-		            success: function (response) {
-						$('#edd_checkout_cart').replaceWith(response.html);
-						$('.edd_cart_amount').each(function() {
-							$(this).text(response.total);
-						});
-		            }
-		        }).fail(function (data) {
-		            if ( window.console && window.console.log ) {
-						console.log( data );
+					if( $('select[name=billing_country]').length && ! $('#edd_simple_shipping_show').is(':checked') ) {
+						var val = $('select[name=billing_country]').val();
+					} else {
+						var val = $('select[name=shipping_country]').val();
+						billing = false;
 					}
-		        });
-			});
 
-			$('body').on('edd_taxes_recalculated', function( event, data ) {
+					if( billing && edd_global_vars.taxes_enabled == '1' )
+						return; // EDD core will recalculate on billing address change if taxes are enabled
 
-				if( $('#edd_simple_shipping_show').is(':checked') )
-					return;
+					if( val == 'US' ) {
+						$('#shipping_state_other').hide();$('#shipping_state_us').show();$('#shipping_state_ca').hide();
+					} else if(  val =='CA') {
+						$('#shipping_state_other').hide();$('#shipping_state_us').hide();$('#shipping_state_ca').show();
+					} else {
+						$('#shipping_state_other').show();$('#shipping_state_us').hide();$('#shipping_state_ca').hide();
+					}
 
-				var postData = {
-		            action: 'edd_get_shipping_rate',
-		            country: data.postdata.billing_country,
-		            state: data.postdata.state
-		        };
-		        $.ajax({
-		            type: "POST",
-		            data: postData,
-		            dataType: "json",
-		            url: edd_global_vars.ajaxurl,
-		            success: function (response) {
-		                if( response ) {
+					var postData = {
+						action: 'edd_get_shipping_rate',
+						country:  val
+					};
 
+					$.ajax({
+						type: "POST",
+						data: postData,
+						dataType: "json",
+						url: edd_global_vars.ajaxurl,
+						success: function (response) {
 							$('#edd_checkout_cart').replaceWith(response.html);
 							$('.edd_cart_amount').each(function() {
 								$(this).text(response.total);
 							});
+						}
+					}).fail(function (data) {
+						if ( window.console && window.console.log ) {
+							console.log( data );
+						}
+					});
+				});
 
-		                } else {
-							if ( window.console && window.console.log ) {
-								console.log( response );
+				$('body').on('edd_taxes_recalculated', function( event, data ) {
+
+					if( $('#edd_simple_shipping_show').is(':checked') )
+						return;
+
+					var postData = {
+						action: 'edd_get_shipping_rate',
+						country: data.postdata.billing_country,
+						state: data.postdata.state
+					};
+					$.ajax({
+						type: "POST",
+						data: postData,
+						dataType: "json",
+						url: edd_global_vars.ajaxurl,
+						success: function (response) {
+							if( response ) {
+
+								$('#edd_checkout_cart').replaceWith(response.html);
+								$('.edd_cart_amount').each(function() {
+									$(this).text(response.total);
+								});
+
+							} else {
+								if ( window.console && window.console.log ) {
+									console.log( response );
+								}
 							}
-				       	}
-		            }
-		        }).fail(function (data) {
-					if ( window.console && window.console.log ) {
-						console.log( data );
-					}
-		        });
+						}
+					}).fail(function (data) {
+						if ( window.console && window.console.log ) {
+							console.log( data );
+						}
+					});
 
-			});
+				});
 
-			$('select#edd-gateway, input.edd-gateway').change( function (e) {
-				var postData = {
-		            action: 'edd_get_shipping_rate',
-		            country: 'US' // default
-		        };
-		        $.ajax({
-		            type: "POST",
-		            data: postData,
-		            dataType: "json",
-		            url: edd_global_vars.ajaxurl,
-		            success: function (response) {
-		               $('#edd_checkout_cart').replaceWith(response.html);
-						$('.edd_cart_amount').each(function() {
-							$(this).text(response.total);
-						});
-		            }
-		        }).fail(function (data) {
-		            if ( window.console && window.console.log ) {
-						console.log( data );
-					}
-		        });
-			});
-			$('#edd_simple_shipping_show').change(function() {
-				$('#edd_simple_shipping_fields_wrap').toggle();
-			});
-		});</script>
+				$('select#edd-gateway, input.edd-gateway').change( function (e) {
+					var postData = {
+						action: 'edd_get_shipping_rate',
+						country: 'US' // default
+					};
+					$.ajax({
+						type: "POST",
+						data: postData,
+						dataType: "json",
+						url: edd_global_vars.ajaxurl,
+						success: function (response) {
+							$('#edd_checkout_cart').replaceWith(response.html);
+							$('.edd_cart_amount').each(function() {
+								$(this).text(response.total);
+							});
+						}
+					}).fail(function (data) {
+						if ( window.console && window.console.log ) {
+							console.log( data );
+						}
+					});
+				});
+				$('#edd_simple_shipping_show').change(function() {
+					$('#edd_simple_shipping_fields_wrap').toggle();
+				});
+			});</script>
 
 		<div id="edd_simple_shipping">
 			<?php if( $this->has_billing_fields() ) : ?>
@@ -797,7 +797,7 @@ class EDD_Simple_Shipping {
 							<?php
 							$countries = edd_get_country_list();
 							foreach( $countries as $country_code => $country ) {
-							  echo '<option value="' . $country_code . '">' . $country . '</option>';
+								echo '<option value="' . $country_code . '">' . $country . '</option>';
 							}
 							?>
 						</select>
@@ -806,22 +806,22 @@ class EDD_Simple_Shipping {
 						<label class="edd-label"><?php _e( 'Shipping State / Province', 'edd-simple-shipping' ); ?></label>
 						<span class="edd-description"><?php _e( 'The state / province for your shipping address.', 'edd-simple-shipping' ); ?></span>
 						<input type="text" size="6" name="shipping_state_other" id="shipping_state_other" class="shipping-state edd-input" placeholder="<?php _e( 'State / Province', 'edd-simple-shipping' ); ?>" style="display:none;"/>
-			            <select name="shipping_state_us" id="shipping_state_us" class="shipping-state edd-select">
-			                <?php
-			                    $states = edd_get_states_list();
-			                    foreach( $states as $state_code => $state ) {
-			                        echo '<option value="' . $state_code . '">' . $state . '</option>';
-			                    }
-			                ?>
-			            </select>
-			            <select name="shipping_state_ca" id="shipping_state_ca" class="shipping-state edd-select" style="display: none;">
-			                <?php
-			                    $provinces = edd_get_provinces_list();
-			                    foreach( $provinces as $province_code => $province ) {
-			                        echo '<option value="' . $province_code . '">' . $province . '</option>';
-			                    }
-			                ?>
-			            </select>
+						<select name="shipping_state_us" id="shipping_state_us" class="shipping-state edd-select">
+							<?php
+							$states = edd_get_states_list();
+							foreach( $states as $state_code => $state ) {
+								echo '<option value="' . $state_code . '">' . $state . '</option>';
+							}
+							?>
+						</select>
+						<select name="shipping_state_ca" id="shipping_state_ca" class="shipping-state edd-select" style="display: none;">
+							<?php
+							$provinces = edd_get_provinces_list();
+							foreach( $provinces as $province_code => $province ) {
+								echo '<option value="' . $province_code . '">' . $province . '</option>';
+							}
+							?>
+						</select>
 					</p>
 					<p id="edd-shipping-zip-wrap">
 						<label class="edd-label"><?php _e( 'Shipping Zip / Postal Code', 'edd-simple-shipping' ); ?></label>
@@ -832,7 +832,7 @@ class EDD_Simple_Shipping {
 				</fieldset>
 			</div>
 		</div>
-<?php 	echo ob_get_clean();
+		<?php 	echo ob_get_clean();
 	}
 
 
@@ -1056,7 +1056,7 @@ class EDD_Simple_Shipping {
 		$status  = get_post_meta( $payment_id, '_edd_payment_shipping_status', true );
 
 		$shipped = $status == '2' ? true : false;
-?>
+		?>
 		<div id="edd-shipping-details" class="postbox">
 			<h3 class="hndle">
 				<span><?php _e( 'Shipping Address', 'edd' ); ?></span>
@@ -1117,7 +1117,7 @@ class EDD_Simple_Shipping {
 										) );
 									} else { ?>
 										<input type="text" name="edd-payment-shipping-address[0][state]" value="<?php esc_attr_e( $address['state'] ); ?>" class="medium-text"/>
-										<?php
+									<?php
 									} ?>
 								</p>
 							</div>
@@ -1133,7 +1133,7 @@ class EDD_Simple_Shipping {
 
 			</div><!-- /.inside -->
 		</div><!-- /#edd-shipping-details -->
-<?php
+	<?php
 	}
 
 
@@ -1254,7 +1254,7 @@ class EDD_Simple_Shipping {
 	 * @return      void
 	 */
 	public function show_export_options() {
-?>
+		?>
 		<div class="postbox">
 			<h3><span><?php _e( 'Export Unshipped Orders to CSV', 'edd-simple-shipping' ); ?></span></h3>
 			<div class="inside">
@@ -1262,7 +1262,7 @@ class EDD_Simple_Shipping {
 				<p><a class="button" href="<?php echo wp_nonce_url( add_query_arg( array( 'edd-action' => 'unshipped_orders_export' ) ), 'edd_export_unshipped_orders' ); ?>"><?php _e( 'Generate CSV', 'edd-simple-shipping' ) ; ?></a></p>
 			</div><!-- .inside -->
 		</div><!-- .postbox -->
-<?php
+	<?php
 	}
 
 
@@ -1384,9 +1384,9 @@ class EDD_Simple_Shipping {
 		$toggle_text = $shipped == '2' ? __( 'Mark as not shipped', 'edd-simple-shipping' ) : __( 'Mark as shipped', 'edd-simple-shipping' );
 
 		echo '<td>' . esc_html( $value );
-			if( $shipped ) {
-				echo '<span class="edd-simple-shipping-sep">&nbsp;&ndash;&nbsp;</span><a href="' . $toggle_url . '" class="edd-simple-shipping-toggle-status">' . $toggle_text . '</a>';
-			}
+		if( $shipped ) {
+			echo '<span class="edd-simple-shipping-sep">&nbsp;&ndash;&nbsp;</span><a href="' . $toggle_url . '" class="edd-simple-shipping-toggle-status">' . $toggle_text . '</a>';
+		}
 		echo '</td>';
 	}
 
@@ -1431,9 +1431,9 @@ class EDD_Simple_Shipping {
 		if( current_user_can( 'edit_shop_payments' ) || current_user_can( 'frontend_vendor' ) ) {
 
 			echo '<tr>';
-				echo '<td colspan="2">';
-					echo '<a href="' . $toggle_url . '" class="edd-simple-shipping-toggle-status">' . $toggle_text . '</a>';
-				echo '</td>';
+			echo '<td colspan="2">';
+			echo '<a href="' . $toggle_url . '" class="edd-simple-shipping-toggle-status">' . $toggle_text . '</a>';
+			echo '</td>';
 			echo '</tr>';
 
 		}
@@ -1538,7 +1538,7 @@ class EDD_Simple_Shipping {
 				<?php FES_Formbuilder_Templates::common( $field_id, 'edd_simple_shipping', false, $values, false, '' ); ?>
 			</div> <!-- .fes-form-holder -->
 		</li>
-		<?php
+	<?php
 	}
 
 	/**
@@ -1605,9 +1605,9 @@ class EDD_Simple_Shipping {
 
 		?>
 		<style>
-		div.fes-form fieldset .fes-fields.edd_simple_shipping label { width: 100%; display:block; }
-		div.fes-form fieldset .fes-fields.edd_simple_shipping .edd-fes-shipping-fields label { width: 45%; display:inline-block; }
-		div.fes-form fieldset .fes-fields .edd-shipping-field { width: 45%; display:inline-block; }
+			div.fes-form fieldset .fes-fields.edd_simple_shipping label { width: 100%; display:block; }
+			div.fes-form fieldset .fes-fields.edd_simple_shipping .edd-fes-shipping-fields label { width: 45%; display:inline-block; }
+			div.fes-form fieldset .fes-fields .edd-shipping-field { width: 45%; display:inline-block; }
 		</style>
 		<div class="fes-fields <?php echo sanitize_key( $attr['name']); ?>">
 			<label for="edd_simple_shipping[enabled]">
@@ -1621,7 +1621,7 @@ class EDD_Simple_Shipping {
 				<input class="edd-shipping-field textfield<?php echo esc_attr( $required ); ?>" id="edd_simple_shipping[international]" type="text" data-required="<?php echo $attr['required'] ?>" data-type="text" name="<?php echo esc_attr( $attr['name'] ); ?>[international]" placeholder="<?php echo __( 'Enter the international shipping charge amount', 'edd-simple-shipping' ); ?>" value="<?php echo esc_attr( $international ) ?>" size="10" />
 			</div>
 		</div> <!-- .fes-fields -->
-		<?php
+	<?php
 	}
 
 
